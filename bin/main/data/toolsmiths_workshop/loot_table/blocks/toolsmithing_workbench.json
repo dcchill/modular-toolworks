@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{
+      "type": "minecraft:item",
+      "name": "toolsmiths_workshop:toolsmithing_workbench"
+    }],
+    "conditions": [{ "condition": "minecraft:survives_explosion" }]
+  }]
+}

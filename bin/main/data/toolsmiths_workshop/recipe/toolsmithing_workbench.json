@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["III", "PCP", "P P"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "tag": "minecraft:planks" },
+    "C": { "item": "minecraft:crafting_table" }
+  },
+  "result": { "id": "toolsmiths_workshop:toolsmithing_workbench", "count": 1 }
+}

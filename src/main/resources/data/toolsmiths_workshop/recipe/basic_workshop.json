@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["III", "SCS", "SSS"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "minecraft:spruce_planks" },
+    "C": { "item": "minecraft:crafting_table" }
+  },
+  "result": { "id": "toolsmiths_workshop:basic_workshop", "count": 1 }
+}

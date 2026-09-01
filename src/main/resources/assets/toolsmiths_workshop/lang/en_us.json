@@ -1,0 +1,9 @@
+{
+  "block.toolsmiths_workshop.basic_workshop": "Basic Workshop",
+  "block.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
+  "item.toolsmiths_workshop.pickaxe": "Modular Pickaxe",
+  "item.toolsmiths_workshop.axe": "Modular Axe",
+  "container.toolsmiths_workshop.basic_workshop": "Basic Workshop",
+  "container.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
+  "itemGroup.toolsmiths_workshop": "Toolsmith's Workshop"
+}
