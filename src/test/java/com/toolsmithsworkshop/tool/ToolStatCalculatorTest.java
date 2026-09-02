@@ -2,10 +2,54 @@ package com.toolsmithsworkshop.tool;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ToolStatCalculatorTest {
+    @Test
+    void woodenShaftUsesHeadDefaults() {
+        for (ToolMaterial head : ToolMaterials.values()) {
+            ToolStats stats = ToolStatCalculator.calculate(ToolArchetype.PICKAXE,
+                    new ToolBuildData(head.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id()));
+
+            assertEquals(head.durability(), stats.durability());
+            assertEquals(head.miningSpeed(), stats.miningSpeed());
+            assertEquals(head.miningLevel(), stats.miningLevel());
+            assertEquals(head.attackDamage(), stats.attackDamage());
+            assertEquals(ToolArchetype.PICKAXE.baseAttackSpeed(), stats.attackSpeed());
+            assertEquals(0.0f, stats.knockback());
+        }
+
+        assertAxeDefaults(ToolMaterials.WOOD, 7.0f, 0.8f);
+        assertAxeDefaults(ToolMaterials.STONE, 9.0f, 0.8f);
+        assertAxeDefaults(ToolMaterials.IRON, 9.0f, 0.9f);
+        assertAxeDefaults(ToolMaterials.GOLD, 7.0f, 1.0f);
+        assertAxeDefaults(ToolMaterials.DIAMOND, 9.0f, 1.0f);
+        assertAxeDefaults(ToolMaterials.NETHERITE, 10.0f, 1.0f);
+
+        assertSwordDefaults(ToolMaterials.WOOD, 4.0f);
+        assertSwordDefaults(ToolMaterials.STONE, 5.0f);
+        assertSwordDefaults(ToolMaterials.IRON, 6.0f);
+        assertSwordDefaults(ToolMaterials.GOLD, 4.0f);
+        assertSwordDefaults(ToolMaterials.DIAMOND, 7.0f);
+        assertSwordDefaults(ToolMaterials.NETHERITE, 8.0f);
+    }
+
+    private static void assertAxeDefaults(ToolMaterial head, float damage, float speed) {
+        ToolStats stats = ToolStatCalculator.calculate(ToolArchetype.AXE,
+                new ToolBuildData(head.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id()));
+        assertEquals(damage, stats.attackDamage());
+        assertEquals(speed, stats.attackSpeed());
+    }
+
+    private static void assertSwordDefaults(ToolMaterial head, float damage) {
+        ToolStats stats = ToolStatCalculator.calculate(ToolArchetype.SWORD,
+                new ToolBuildData(head.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id()));
+        assertEquals(damage, stats.attackDamage());
+        assertEquals(1.6f, stats.attackSpeed());
+    }
+
     @Test
     void componentPositionChangesStats() {
         ToolStats copperHead = ToolStatCalculator.calculate(ToolArchetype.PICKAXE,

@@ -20,7 +20,9 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
     private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(
             ToolsmithsWorkshop.MOD_ID, "textures/gui/basic_workbench_gui.png");
     private static final ItemStack[] PART_ICONS = {
-            icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.BINDING), icon(ComponentRole.GRIP)
+            icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.SHOVEL_HEAD),
+            icon(ComponentRole.SWORD_BLADE),
+            icon(ComponentRole.BINDING), icon(ComponentRole.GRIP)
     };
     private final List<Button> partButtons = new ArrayList<>();
 
@@ -70,21 +72,28 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
         }
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, "Parts", leftPos - 36, topPos + 11, 0xFFFFFF);
+        graphics.drawString(font, "Tier " + menu.workshopTier(), leftPos + imageWidth + 10, topPos + 12, 0xFFFFFF, false);
         for (int i = 0; i < partButtons.size(); i++) {
             Button button = partButtons.get(i);
             graphics.renderItem(PART_ICONS[i], button.getX() + 5, button.getY() + 5);
         }
 
         int infoX = leftPos + imageWidth + 10;
-        graphics.drawString(font, menu.selectedPart().displayName(), infoX, topPos + 12, 0xFFFFFF, false);
-        graphics.drawString(font, "Cost", infoX, topPos + 34, 0xA0A0A0, false);
-        graphics.drawString(font, BasicWorkshopMenu.requiredCount(menu.selectedPart()) + " material", infoX, topPos + 46,
+        graphics.drawString(font, menu.selectedPart().displayName(), infoX, topPos + 24, 0xFFFFFF, false);
+        graphics.drawString(font, "Cost", infoX, topPos + 42, 0xA0A0A0, false);
+        graphics.drawString(font, BasicWorkshopMenu.requiredCount(menu.selectedPart()) + " material", infoX, topPos + 54,
                 0xFFFFFF, false);
         ItemStack input = menu.getSlot(0).getItem();
         if (!input.isEmpty()) {
-            graphics.drawString(font, "Using", infoX, topPos + 67, 0xA0A0A0, false);
-            graphics.drawString(font, font.plainSubstrByWidth(input.getHoverName().getString(), 92), infoX, topPos + 79,
+            graphics.drawString(font, "Using", infoX, topPos + 71, 0xA0A0A0, false);
+            graphics.drawString(font, font.plainSubstrByWidth(input.getHoverName().getString(), 92), infoX, topPos + 83,
                     0xFFFFFF, false);
+            for (var candidate : ToolMaterials.values()) {
+                if (input.is(candidate.repairItem()) || input.is(net.minecraft.tags.ItemTags.PLANKS) && candidate == ToolMaterials.WOOD) {
+                    graphics.drawString(font, "Requires Tier " + candidate.workshopTier(), infoX, topPos + 95, 0xA0A0A0, false);
+                    break;
+                }
+            }
         }
         renderTooltip(graphics, mouseX, mouseY);
     }

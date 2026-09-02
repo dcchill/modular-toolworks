@@ -22,16 +22,21 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class BasicWorkshopBlock extends HorizontalDirectionalBlock {
-    public static final MapCodec<BasicWorkshopBlock> CODEC = simpleCodec(BasicWorkshopBlock::new);
+    private final int tier;
 
     public BasicWorkshopBlock(BlockBehaviour.Properties properties) {
+        this(1, properties);
+    }
+
+    public BasicWorkshopBlock(int tier, BlockBehaviour.Properties properties) {
         super(properties);
+        this.tier = tier;
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
+        return simpleCodec(properties -> new BasicWorkshopBlock(tier, properties));
     }
 
     @Override
@@ -56,13 +61,13 @@ public final class BasicWorkshopBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) serverPlayer.openMenu(menuProvider(level, pos));
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) serverPlayer.openMenu(menuProvider(level, pos, tier));
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    private static MenuProvider menuProvider(Level level, BlockPos pos) {
+    private static MenuProvider menuProvider(Level level, BlockPos pos, int tier) {
         return new SimpleMenuProvider((id, inventory, player) ->
-                new BasicWorkshopMenu(id, inventory, ContainerLevelAccess.create(level, pos)),
-                Component.translatable("container.toolsmiths_workshop.basic_workshop"));
+                new BasicWorkshopMenu(id, inventory, ContainerLevelAccess.create(level, pos), tier),
+                Component.literal("Tier " + tier + " Workshop"));
     }
 }

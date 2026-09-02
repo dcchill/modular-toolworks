@@ -1,8 +1,8 @@
 package com.toolsmithsworkshop.menu;
 
-import com.toolsmithsworkshop.registry.ModBlocks;
 import com.toolsmithsworkshop.registry.ModItems;
 import com.toolsmithsworkshop.registry.ModMenus;
+import com.toolsmithsworkshop.block.BasicWorkshopBlock;
 import com.toolsmithsworkshop.item.ForgingHammerItem;
 import com.toolsmithsworkshop.tool.ComponentRole;
 import com.toolsmithsworkshop.tool.ToolMaterial;
@@ -25,7 +25,9 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     public static final int FORGING_HAMMER = 1;
     public static final int RESULT = 2;
     public static final ComponentRole[] PARTS = {
-            ComponentRole.PICKAXE_HEAD, ComponentRole.AXE_HEAD, ComponentRole.BINDING, ComponentRole.GRIP
+            ComponentRole.PICKAXE_HEAD, ComponentRole.AXE_HEAD, ComponentRole.SHOVEL_HEAD,
+            ComponentRole.SWORD_BLADE,
+            ComponentRole.BINDING, ComponentRole.GRIP
     };
 
     private final Container input = new SimpleContainer(2) {
@@ -38,15 +40,22 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     private final ResultContainer result = new ResultContainer();
     private final ContainerLevelAccess access;
     private final DataSlot selected = DataSlot.standalone();
+    private final DataSlot workshopTier = DataSlot.standalone();
 
     public BasicWorkshopMenu(int id, Inventory inventory) {
-        this(id, inventory, ContainerLevelAccess.NULL);
+        this(id, inventory, ContainerLevelAccess.NULL, 1);
     }
 
     public BasicWorkshopMenu(int id, Inventory inventory, ContainerLevelAccess access) {
+        this(id, inventory, access, 1);
+    }
+
+    public BasicWorkshopMenu(int id, Inventory inventory, ContainerLevelAccess access, int tier) {
         super(ModMenus.BASIC_WORKSHOP.get(), id);
         this.access = access;
         addDataSlot(selected);
+        workshopTier.set(tier);
+        addDataSlot(workshopTier);
         addSlot(new Slot(input, MATERIAL, 42, 29));
         addSlot(new Slot(input, FORGING_HAMMER, 80, 29) {
             @Override public boolean mayPlace(ItemStack stack) { return stack.getItem() instanceof ForgingHammerItem; }
@@ -69,6 +78,10 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
         return PARTS[Math.max(0, Math.min(selected.get(), PARTS.length - 1))];
     }
 
+    public int workshopTier() {
+        return workshopTier.get();
+    }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id < 0 || id >= PARTS.length) return false;
@@ -87,8 +100,9 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     private ItemStack makeResult() {
         ToolMaterial material = materialFor(input.getItem(MATERIAL));
         ComponentRole part = selectedPart();
-        if (material == null || input.getItem(MATERIAL).getCount() < requiredCount(part)
-                || input.getItem(FORGING_HAMMER).isEmpty()) return ItemStack.EMPTY;
+        ForgingHammerItem hammer = input.getItem(FORGING_HAMMER).getItem() instanceof ForgingHammerItem item ? item : null;
+        if (material == null || hammer == null || !canForge(material, workshopTier(), hammer.workshopTier())
+                || input.getItem(MATERIAL).getCount() < requiredCount(part)) return ItemStack.EMPTY;
         DeferredItem<?> component = ModItems.component(part, material.id());
         return component == null ? ItemStack.EMPTY : new ItemStack(component.get());
     }
@@ -102,6 +116,10 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     public static int requiredCount(ComponentRole role) {
         if (role.isHead()) return 3;
         return role == ComponentRole.BINDING ? 2 : 1;
+    }
+
+    static boolean canForge(ToolMaterial material, int workshopTier, int hammerTier) {
+        return material.workshopTier() <= workshopTier && material.workshopTier() <= hammerTier;
     }
 
     private static ToolMaterial materialFor(ItemStack stack) {
@@ -136,7 +154,8 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.BASIC_WORKSHOP.get());
+        return access.evaluate((level, pos) -> level.getBlockState(pos).getBlock() instanceof BasicWorkshopBlock
+                && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0, true);
     }
 
     @Override

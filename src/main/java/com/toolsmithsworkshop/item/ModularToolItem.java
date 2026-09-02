@@ -6,6 +6,7 @@ import com.toolsmithsworkshop.tool.MaterialTrait;
 import com.toolsmithsworkshop.tool.ToolArchetype;
 import com.toolsmithsworkshop.tool.ToolBuildData;
 import com.toolsmithsworkshop.tool.ToolMaterial;
+import com.toolsmithsworkshop.tool.ToolMomentum;
 import com.toolsmithsworkshop.tool.ToolMaterials;
 import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import com.toolsmithsworkshop.tool.ToolStats;
@@ -17,6 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
@@ -34,6 +37,9 @@ import java.util.function.Consumer;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class ModularToolItem extends Item {
+    private static final int DIGGING_MOMENTUM_WINDOW_TICKS = 30;
+    private static final int WEAPON_STICKY_WINDOW_TICKS = 10;
+    private static final int MAX_MOMENTUM_STACKS = 16;
     private static final ResourceLocation DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_damage");
     private static final ResourceLocation SPEED_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_speed");
     private static final ResourceLocation KNOCKBACK_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_knockback");
@@ -46,6 +52,11 @@ public final class ModularToolItem extends Item {
 
     public ToolArchetype archetype() {
         return archetype;
+    }
+
+    @Override
+    public int getEnchantmentValue() {
+        return 15;
     }
 
     @Override
@@ -94,7 +105,10 @@ public final class ModularToolItem extends Item {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
         if (build == null || !canMine(state)) return 1.0f;
         float speed = ToolStatCalculator.calculate(archetype, build).miningSpeed();
-        if (hasMaterial(build, ToolMaterials.STONE.id()) && state.is(BlockTags.MINEABLE_WITH_PICKAXE)) speed *= 1.05f;
+        if (!ToolStatCalculator.isVanillaEquivalent(build) && hasMaterial(build, ToolMaterials.STONE.id())
+                && state.is(BlockTags.MINEABLE_WITH_PICKAXE)) speed *= 1.05f;
+        if (archetype == ToolArchetype.PICKAXE && isSticky(build)) speed *= momentumMultiplier(stack);
+        if (archetype == ToolArchetype.PICKAXE && isBrittle(build)) speed *= 1.5f;
         return speed;
     }
 
@@ -105,7 +119,12 @@ public final class ModularToolItem extends Item {
     }
 
     private boolean canMine(BlockState state) {
-        return archetype == ToolArchetype.AXE ? state.is(BlockTags.MINEABLE_WITH_AXE) : state.is(BlockTags.MINEABLE_WITH_PICKAXE);
+        return switch (archetype) {
+            case AXE -> state.is(BlockTags.MINEABLE_WITH_AXE);
+            case SHOVEL -> state.is(BlockTags.MINEABLE_WITH_SHOVEL);
+            case PICKAXE -> state.is(BlockTags.MINEABLE_WITH_PICKAXE);
+            case SWORD -> false;
+        };
     }
 
     private static boolean meetsMiningLevel(BlockState state, int level) {
@@ -121,14 +140,26 @@ public final class ModularToolItem extends Item {
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miner) {
         if (!level.isClientSide && state.getDestroySpeed(level, pos) != 0) {
-            damage(stack, 1, miner);
+            ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
+            if (archetype == ToolArchetype.PICKAXE && isSticky(build)) addMomentum(stack, level.getGameTime());
+            damage(stack, archetype == ToolArchetype.PICKAXE && isBrittle(build) && level.random.nextBoolean() ? 3 : 1, miner);
         }
         return true;
     }
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        damage(stack, 2, attacker);
+        ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!attacker.level().isClientSide && archetype == ToolArchetype.SWORD && isSticky(build)) {
+            MobEffectInstance existing = target.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            int amplifier = Math.min(4, existing == null ? 0 : existing.getAmplifier() + 1);
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, WEAPON_STICKY_WINDOW_TICKS, amplifier));
+        }
+        if (!attacker.level().isClientSide && archetype == ToolArchetype.SWORD && isBrittle(build)
+                && attacker instanceof net.minecraft.world.entity.player.Player player && isCriticalHit(player)) {
+            target.hurt(player.damageSources().playerAttack(player), (float) (player.getAttributeValue(Attributes.ATTACK_DAMAGE) * 0.45));
+        }
+        damage(stack, archetype == ToolArchetype.SWORD && isBrittle(build) ? 4 : 2, attacker);
         return true;
     }
 
@@ -142,12 +173,47 @@ public final class ModularToolItem extends Item {
         return build.head().equals(material) || build.binding().equals(material) || build.grip().equals(material);
     }
 
+    private static boolean isSticky(ToolBuildData build) {
+        return build != null && build.binding().equals(ToolMaterials.SLIME.id());
+    }
+
+    private static boolean isBrittle(ToolBuildData build) {
+        return build != null && build.grip().equals(ToolMaterials.BONE.id());
+    }
+
+    private static boolean isCriticalHit(net.minecraft.world.entity.player.Player player) {
+        return player.fallDistance > 0.0f && !player.onGround() && !player.onClimbable()
+                && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger();
+    }
+
+    private static float momentumMultiplier(ItemStack stack) {
+        ToolMomentum momentum = stack.get(ModDataComponents.MOMENTUM);
+        return momentum == null ? 1.0f : 1.0f + momentum.stacks() / (float) MAX_MOMENTUM_STACKS;
+    }
+
+    private static void addMomentum(ItemStack stack, long gameTime) {
+        ToolMomentum momentum = stack.get(ModDataComponents.MOMENTUM);
+        int stacks = momentum != null && gameTime - momentum.lastMineTick() <= DIGGING_MOMENTUM_WINDOW_TICKS
+                ? Math.min(MAX_MOMENTUM_STACKS, momentum.stacks() + 1) : 1;
+        stack.set(ModDataComponents.MOMENTUM, new ToolMomentum(gameTime, stacks));
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slotId, boolean isSelected) {
+        ToolMomentum momentum = stack.get(ModDataComponents.MOMENTUM);
+        if (!level.isClientSide && momentum != null && level.getGameTime() - momentum.lastMineTick() > DIGGING_MOMENTUM_WINDOW_TICKS) {
+            stack.remove(ModDataComponents.MOMENTUM);
+        }
+    }
+
     @Override
     public boolean canPerformAction(ItemStack stack, ItemAbility ability) {
         return switch (archetype) {
             case PICKAXE -> ability == ItemAbilities.PICKAXE_DIG;
             case AXE -> ability == ItemAbilities.AXE_DIG || ability == ItemAbilities.AXE_STRIP ||
                     ability == ItemAbilities.AXE_SCRAPE || ability == ItemAbilities.AXE_WAX_OFF;
+            case SHOVEL -> ability == ItemAbilities.SHOVEL_DIG;
+            case SWORD -> ability == ItemAbilities.SWORD_DIG || ability == ItemAbilities.SWORD_SWEEP;
         };
     }
 
@@ -166,7 +232,7 @@ public final class ModularToolItem extends Item {
         tooltip.add(Component.literal(ToolMaterials.get(build.binding()).displayName() + " Tool Binding").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(ToolMaterials.get(build.grip()).displayName() + " Tool Grip").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.empty());
-        tooltip.add(stat("Mining Speed", stats.miningSpeed()));
+        tooltip.add(archetype == ToolArchetype.SWORD ? stat("Damage", stats.attackDamage()) : stat("Mining Speed", stats.miningSpeed()));
         tooltip.add(Component.literal("Mining Level: " + miningLevelName(stats.miningLevel())).withStyle(ChatFormatting.BLUE));
         tooltip.add(Component.literal("Durability: " + (stack.getMaxDamage() - stack.getDamageValue()) + " / " + stack.getMaxDamage()).withStyle(ChatFormatting.BLUE));
         tooltip.add(stat("Weight", stats.weight()));

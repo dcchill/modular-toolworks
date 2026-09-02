@@ -7,6 +7,7 @@ import com.toolsmithsworkshop.tool.MaterialTrait;
 import com.toolsmithsworkshop.tool.ToolBuildData;
 import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import com.toolsmithsworkshop.tool.ToolStats;
+import com.toolsmithsworkshop.tool.ToolArchetype;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -26,13 +27,12 @@ public final class ToolsmithingScreen extends AbstractContainerScreen<Toolsmithi
     @Override
     protected void init() {
         super.init();
-        String[] names = {"Pickaxe", "Axe"};
-        for (int i = 0; i < names.length; i++) {
+        for (int i = 0; i < ToolArchetype.values().length; i++) {
             int id = i;
-            addRenderableWidget(Button.builder(Component.literal(names[i]), button -> click(id))
-                    .bounds(leftPos + 6 + i * 56, topPos - 22, 53, 20).build());
+            addRenderableWidget(Button.builder(Component.literal(ToolArchetype.values()[i].displayName()), button -> click(id))
+                    .bounds(leftPos + 2 + i * 43, topPos - 22, 41, 20).build());
         }
-        addRenderableWidget(Button.builder(Component.literal("Assemble / Repair"), button -> click(3))
+        addRenderableWidget(Button.builder(Component.literal("Assemble / Repair"), button -> click(ToolArchetype.values().length))
                 .bounds(leftPos + 103, topPos + 61, 68, 20).build());
     }
 

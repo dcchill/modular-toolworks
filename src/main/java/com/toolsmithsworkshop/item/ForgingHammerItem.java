@@ -13,6 +13,10 @@ public final class ForgingHammerItem extends Item {
         this.material = material;
     }
 
+    public int workshopTier() {
+        return material.workshopTier();
+    }
+
     @Override
     public Component getName(ItemStack stack) {
         return Component.literal(material.displayName() + " Forging Hammer");

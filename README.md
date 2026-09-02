@@ -9,7 +9,7 @@ Planned Features
     a. Cactus.  Cactus grip hurts the player when they attack but it does 1.5x damage.
     b. Breeze rod (as a grip)
     c. Maybe Quartz and Amethyst?
+    d. flint for sure
 
 Needs to fix.
-1. Equivalent tools need to be set to default values.  For example.  An iron pickaxe head with wood binding and grip needs to have the same stats as the normal iron pickaxe.
-2. Z-Fighting.
+1. Z-Fighting.

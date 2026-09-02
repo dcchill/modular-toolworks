@@ -5,10 +5,11 @@ import com.toolsmithsworkshop.registry.ModDataComponents;
 import com.toolsmithsworkshop.registry.ModItems;
 import com.toolsmithsworkshop.tool.ComponentRole;
 import com.toolsmithsworkshop.tool.ToolBuildData;
+import com.toolsmithsworkshop.tool.ToolComponentData;
+import com.toolsmithsworkshop.tool.ToolVisualTransform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
@@ -26,8 +27,6 @@ public final class ModularToolRenderer extends BlockEntityWithoutLevelRenderer {
                              MultiBufferSource buffer, int packedLight, int packedOverlay) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
         if (build == null || !(stack.getItem() instanceof com.toolsmithsworkshop.item.ModularToolItem tool)) return;
-        packedLight = LightTexture.FULL_BRIGHT;
-
         poseStack.pushPose();
         poseStack.translate(0.5f, 0.5f, 0.5f);
         if (context != ItemDisplayContext.GUI) {
@@ -36,29 +35,32 @@ public final class ModularToolRenderer extends BlockEntityWithoutLevelRenderer {
                     || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
             model.getTransforms().getTransform(context).apply(leftHanded, poseStack);
         }
-        renderPart(ModItems.component(ComponentRole.BINDING, build.binding()), poseStack, buffer,
-                packedLight, packedOverlay, 0.02f);
-        renderPart(ModItems.component(tool.archetype().headRole(), build.head()), poseStack, buffer,
-                packedLight, packedOverlay, 0.01f);
-        ItemStack grip = build.grip().equals(com.toolsmithsworkshop.tool.ToolMaterials.WOOD.id())
-                ? new ItemStack(ModItems.WOODEN_GRIP.get())
-                : new ItemStack(ModItems.component(ComponentRole.GRIP, build.grip()).get());
-        renderStack(grip, poseStack, buffer, packedLight, packedOverlay, 0.0f);
+        renderPart(ModItems.visual(tool.archetype(), ComponentRole.BINDING, build.binding()), ComponentRole.BINDING, build.binding(), tool.archetype().visualTransform(ComponentRole.BINDING), poseStack, buffer,
+                packedLight, packedOverlay);
+        renderPart(ModItems.visual(tool.archetype(), tool.archetype().headRole()), tool.archetype().headRole(), build.head(), tool.archetype().visualTransform(tool.archetype().headRole()), poseStack, buffer,
+                packedLight, packedOverlay);
+        renderPart(ModItems.visual(tool.archetype(), ComponentRole.GRIP, build.grip()), ComponentRole.GRIP, build.grip(), tool.archetype().visualTransform(ComponentRole.GRIP), poseStack, buffer,
+                packedLight, packedOverlay);
         poseStack.popPose();
     }
 
-    private static void renderPart(net.neoforged.neoforge.registries.DeferredItem<?> item,
-                                   PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay,
-                                   float zOffset) {
-        if (item != null) renderStack(new ItemStack(item.get()), poseStack, buffer, packedLight, packedOverlay, zOffset);
+    private static void renderPart(net.neoforged.neoforge.registries.DeferredItem<?> item, ComponentRole role,
+                                   net.minecraft.resources.ResourceLocation material,
+                                   ToolVisualTransform transform,
+                                   PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        if (item == null) return;
+        ItemStack stack = new ItemStack(item.get());
+        stack.set(ModDataComponents.TOOL_COMPONENT.value(), new ToolComponentData(role, material));
+        poseStack.pushPose();
+        poseStack.translate(transform.x(), transform.y(), 0.0f);
+        poseStack.scale(transform.scale(), transform.scale(), transform.depthScale());
+        renderStack(stack, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
     }
 
     private static void renderStack(ItemStack stack, PoseStack poseStack,
-                                    MultiBufferSource buffer, int packedLight, int packedOverlay, float zOffset) {
-        poseStack.pushPose();
-        poseStack.translate(0.0f, 0.0f, zOffset);
+                                    MultiBufferSource buffer, int packedLight, int packedOverlay) {
         Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, packedLight, packedOverlay,
                 poseStack, buffer, Minecraft.getInstance().level, 0);
-        poseStack.popPose();
     }
 }

@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-"textures": { "layer0": "toolsmiths_workshop:item/wood_pickaxe_head" }
+"textures": { "layer0": "toolsmiths_workshop:item/pickaxe_head" }
 }

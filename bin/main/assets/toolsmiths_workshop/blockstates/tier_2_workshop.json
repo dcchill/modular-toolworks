@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"toolsmiths_workshop:block/basic_workshop"},"facing=east":{"model":"toolsmiths_workshop:block/basic_workshop","y":90},"facing=south":{"model":"toolsmiths_workshop:block/basic_workshop","y":180},"facing=west":{"model":"toolsmiths_workshop:block/basic_workshop","y":270}}}

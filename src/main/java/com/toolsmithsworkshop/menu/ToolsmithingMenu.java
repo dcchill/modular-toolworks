@@ -79,7 +79,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
                 ToolComponentData component = componentData(stack);
                 if (component == null) return false;
                 return switch (index) {
-                    case HEAD -> component.role() == archetype().headRole();
+                    case HEAD -> component.role().isHead();
                     case BINDING -> component.role() == ComponentRole.BINDING;
                     case GRIP -> component.role() == ComponentRole.GRIP;
                     default -> false;
@@ -122,10 +122,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         if (head == null || binding == null || grip == null || head.role() != archetype().headRole()
                 || binding.role() != ComponentRole.BINDING || grip.role() != ComponentRole.GRIP) return ItemStack.EMPTY;
 
-        ModularToolItem item = switch (archetype()) {
-            case PICKAXE -> ModItems.MODULAR_PICKAXE.get();
-            case AXE -> ModItems.MODULAR_AXE.get();
-        };
+        ModularToolItem item = ModItems.tool(archetype()).get();
         if (input.getItem(FORGING_HAMMER).isEmpty()) return ItemStack.EMPTY;
         return ModularToolItem.create(item, new ToolBuildData(head.material(), binding.material(), grip.material()));
     }
@@ -163,7 +160,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
             slotsChanged(input);
             return true;
         }
-        if (id == 3 && !preview().isEmpty()) {
+        if (id == ToolArchetype.values().length && !preview().isEmpty()) {
             ItemStack output = preview().copy();
             if (player.getInventory().add(output)) return consumeInputs();
         }

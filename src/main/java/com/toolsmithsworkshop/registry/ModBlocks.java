@@ -13,6 +13,15 @@ public final class ModBlocks {
     public static final DeferredBlock<BasicWorkshopBlock> BASIC_WORKSHOP = REGISTER.registerBlock(
             "basic_workshop", BasicWorkshopBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
+    public static final DeferredBlock<BasicWorkshopBlock> TIER_2_WORKSHOP = REGISTER.registerBlock(
+            "tier_2_workshop", properties -> new BasicWorkshopBlock(2, properties),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
+    public static final DeferredBlock<BasicWorkshopBlock> TIER_3_WORKSHOP = REGISTER.registerBlock(
+            "tier_3_workshop", properties -> new BasicWorkshopBlock(3, properties),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
+    public static final DeferredBlock<BasicWorkshopBlock> TIER_4_WORKSHOP = REGISTER.registerBlock(
+            "tier_4_workshop", properties -> new BasicWorkshopBlock(4, properties),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
     public static final DeferredBlock<ToolsmithingWorkbenchBlock> TOOLSMITHING_WORKBENCH = REGISTER.registerBlock(
             "toolsmithing_workbench", ToolsmithingWorkbenchBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));

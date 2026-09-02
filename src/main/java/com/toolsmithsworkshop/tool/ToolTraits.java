@@ -17,6 +17,8 @@ public final class ToolTraits {
         add("reliable", "Reliable", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
         add("refined", "Refined", 0.85f, 1.08f, 1.00f, 0.12f, 0, 1.00f);
         add("hardened", "Hardened", 1.10f, 1.00f, 1.00f, 0.00f, 1, 1.00f);
+        add("sticky", "Sticky", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
+        add("brittle", "Brittle", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
     }
 
     private ToolTraits() {}
