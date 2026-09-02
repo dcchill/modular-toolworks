@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["DED", "ISI", "PPP"],
+  "key": {
+    "D": { "item": "minecraft:diamond" },
+    "E": { "item": "minecraft:emerald" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "minecraft:smithing_table" },
+    "P": { "tag": "minecraft:planks" }
+  },
+  "result": { "id": "toolsmiths_workshop:gemsetting_bench", "count": 1 }
+}

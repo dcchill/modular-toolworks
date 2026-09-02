@@ -24,10 +24,12 @@ public final class ModCreativeTabs {
                 output.accept(ModBlocks.TIER_3_WORKSHOP.get());
                 output.accept(ModBlocks.TIER_4_WORKSHOP.get());
                 output.accept(ModBlocks.TOOLSMITHING_WORKBENCH.get());
+                output.accept(ModBlocks.GEMSETTING_BENCH.get());
                 for (ComponentRole role : ComponentRole.values()) ModItems.components(role).forEach(output::accept);
                 ToolBuildData ironWood = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.IRON.id(), ToolMaterials.WOOD.id());
                 output.accept(ModularToolItem.create(ModItems.MODULAR_PICKAXE.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_AXE.get(), ironWood));
+                output.accept(ModularToolItem.create(ModItems.MODULAR_BATTLE_AXE.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_SHOVEL.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_SWORD.get(), ironWood));
                 for (ToolMaterial material : ToolMaterials.values()) {

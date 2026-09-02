@@ -27,12 +27,7 @@ public final class ToolsmithingScreen extends AbstractContainerScreen<Toolsmithi
     @Override
     protected void init() {
         super.init();
-        for (int i = 0; i < ToolArchetype.values().length; i++) {
-            int id = i;
-            addRenderableWidget(Button.builder(Component.literal(ToolArchetype.values()[i].displayName()), button -> click(id))
-                    .bounds(leftPos + 2 + i * 43, topPos - 22, 41, 20).build());
-        }
-        addRenderableWidget(Button.builder(Component.literal("Assemble / Repair"), button -> click(ToolArchetype.values().length))
+        addRenderableWidget(Button.builder(Component.literal("Assemble / Repair"), button -> click(0))
                 .bounds(leftPos + 103, topPos + 61, 68, 20).build());
     }
 
@@ -65,11 +60,17 @@ public final class ToolsmithingScreen extends AbstractContainerScreen<Toolsmithi
             ToolStats stats = ToolStatCalculator.calculate(tool.archetype(), build);
             int x = 99;
             graphics.drawString(font, String.format(Locale.ROOT, "Dur %d", stats.durability()), x, 8, 0xFFFFFF, false);
-            graphics.drawString(font, String.format(Locale.ROOT, "Speed %.1f", stats.miningSpeed()), x, 18, 0xFFFFFF, false);
-            graphics.drawString(font, "Level " + ModularToolItem.miningLevelName(stats.miningLevel()), x, 28, 0xFFFFFF, false);
-            graphics.drawString(font, String.format(Locale.ROOT, "Damage %.1f", stats.attackDamage()), x, 48, 0xFFFFFF, false);
-            graphics.drawString(font, String.format(Locale.ROOT, "Atk %.2f", stats.attackSpeed()), x, 58, 0xFFFFFF, false);
-            graphics.drawString(font, String.format(Locale.ROOT, "Weight %.2f", stats.weight()), x, 68, 0xFFFFFF, false);
+            if (tool.archetype() == ToolArchetype.SWORD || tool.archetype() == ToolArchetype.BATTLE_AXE) {
+                graphics.drawString(font, String.format(Locale.ROOT, "Damage %.1f", stats.attackDamage()), x, 18, 0xFFFFFF, false);
+                graphics.drawString(font, String.format(Locale.ROOT, "Atk %.2f", stats.attackSpeed()), x, 28, 0xFFFFFF, false);
+                graphics.drawString(font, String.format(Locale.ROOT, "Weight %.2f", stats.weight()), x, 38, 0xFFFFFF, false);
+            } else {
+                graphics.drawString(font, String.format(Locale.ROOT, "Speed %.1f", stats.miningSpeed()), x, 18, 0xFFFFFF, false);
+                graphics.drawString(font, "Level " + ModularToolItem.miningLevelName(stats.miningLevel()), x, 28, 0xFFFFFF, false);
+                graphics.drawString(font, String.format(Locale.ROOT, "Damage %.1f", stats.attackDamage()), x, 48, 0xFFFFFF, false);
+                graphics.drawString(font, String.format(Locale.ROOT, "Atk %.2f", stats.attackSpeed()), x, 58, 0xFFFFFF, false);
+                graphics.drawString(font, String.format(Locale.ROOT, "Weight %.2f", stats.weight()), x, 68, 0xFFFFFF, false);
+            }
         }
     }
 

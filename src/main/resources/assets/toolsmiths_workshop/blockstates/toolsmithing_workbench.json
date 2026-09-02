@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "toolsmiths_workshop:block/toolsmithing_workbench" }
+    "facing=north": { "model": "toolsmiths_workshop:block/toolsmithing_workbench" },
+    "facing=east": { "model": "toolsmiths_workshop:block/toolsmithing_workbench", "y": 90 },
+    "facing=south": { "model": "toolsmiths_workshop:block/toolsmithing_workbench", "y": 180 },
+    "facing=west": { "model": "toolsmiths_workshop:block/toolsmithing_workbench", "y": 270 }
   }
 }

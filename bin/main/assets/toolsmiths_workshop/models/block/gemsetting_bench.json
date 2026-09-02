@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "minecraft:block/dark_oak_planks",
+    "up": "minecraft:block/anvil",
+    "north": "toolsmiths_workshop:block/gemsetting_bench_front",
+    "south": "toolsmiths_workshop:block/gemsetting_bench_back",
+    "west": "toolsmiths_workshop:block/gemsetting_bench_sides",
+    "east": "toolsmiths_workshop:block/gemsetting_bench_sides",
+    "particle": "toolsmiths_workshop:block/gemsetting_bench_sides"
+  }
+}

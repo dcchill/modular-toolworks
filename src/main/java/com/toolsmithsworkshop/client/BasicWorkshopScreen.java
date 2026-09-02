@@ -21,7 +21,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
             ToolsmithsWorkshop.MOD_ID, "textures/gui/basic_workbench_gui.png");
     private static final ItemStack[] PART_ICONS = {
             icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.SHOVEL_HEAD),
-            icon(ComponentRole.SWORD_BLADE),
+            icon(ComponentRole.SWORD_BLADE), icon(ComponentRole.BATTLE_AXE_HEAD),
             icon(ComponentRole.BINDING), icon(ComponentRole.GRIP)
     };
     private final List<Button> partButtons = new ArrayList<>();
@@ -39,7 +39,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
         for (int i = 0; i < BasicWorkshopMenu.PARTS.length; i++) {
             int id = i;
             Button button = Button.builder(Component.empty(), ignored -> select(id))
-                    .bounds(leftPos - 64 + (i % 2) * 28, topPos + 24 + (i / 2) * 28, 26, 26)
+                    .bounds(leftPos - 92 + (i % 3) * 28, topPos + 24 + (i / 3) * 28, 26, 26)
                     .tooltip(net.minecraft.client.gui.components.Tooltip.create(
                             Component.literal(BasicWorkshopMenu.PARTS[i].displayName())))
                     .build();
@@ -54,7 +54,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        renderPanel(graphics, leftPos - 70, topPos + 4, 68, 108);
+        renderPanel(graphics, leftPos - 98, topPos + 4, 96, 108);
         renderPanel(graphics, leftPos + imageWidth + 2, topPos + 4, 108, 108);
         graphics.blit(GUI, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
     }
@@ -71,7 +71,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
             partButtons.get(i).active = menu.selectedPart() != BasicWorkshopMenu.PARTS[i];
         }
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(font, "Parts", leftPos - 36, topPos + 11, 0xFFFFFF);
+        graphics.drawCenteredString(font, "Parts", leftPos - 50, topPos + 11, 0xFFFFFF);
         graphics.drawString(font, "Tier " + menu.workshopTier(), leftPos + imageWidth + 10, topPos + 12, 0xFFFFFF, false);
         for (int i = 0; i < partButtons.size(); i++) {
             Button button = partButtons.get(i);

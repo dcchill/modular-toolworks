@@ -26,7 +26,7 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     public static final int RESULT = 2;
     public static final ComponentRole[] PARTS = {
             ComponentRole.PICKAXE_HEAD, ComponentRole.AXE_HEAD, ComponentRole.SHOVEL_HEAD,
-            ComponentRole.SWORD_BLADE,
+            ComponentRole.SWORD_BLADE, ComponentRole.BATTLE_AXE_HEAD,
             ComponentRole.BINDING, ComponentRole.GRIP
     };
 

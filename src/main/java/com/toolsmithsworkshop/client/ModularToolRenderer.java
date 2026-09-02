@@ -41,6 +41,7 @@ public final class ModularToolRenderer extends BlockEntityWithoutLevelRenderer {
                 packedLight, packedOverlay);
         renderPart(ModItems.visual(tool.archetype(), ComponentRole.GRIP, build.grip()), ComponentRole.GRIP, build.grip(), tool.archetype().visualTransform(ComponentRole.GRIP), poseStack, buffer,
                 packedLight, packedOverlay);
+        for (var gem : build.modules()) renderGem(ModItems.gemVisual(tool.archetype()), gem, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
     }
 
@@ -54,6 +55,18 @@ public final class ModularToolRenderer extends BlockEntityWithoutLevelRenderer {
         poseStack.pushPose();
         poseStack.translate(transform.x(), transform.y(), 0.0f);
         poseStack.scale(transform.scale(), transform.scale(), transform.depthScale());
+        renderStack(stack, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
+    }
+
+    private static void renderGem(net.neoforged.neoforge.registries.DeferredItem<?> item,
+                                  net.minecraft.resources.ResourceLocation material,
+                                  PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        if (item == null) return;
+        ItemStack stack = new ItemStack(item.get());
+        stack.set(ModDataComponents.TOOL_COMPONENT.value(), new ToolComponentData(ComponentRole.GRIP, material));
+        poseStack.pushPose();
+        poseStack.translate(0.0f, 0.0f, 0.03125f);
         renderStack(stack, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
     }

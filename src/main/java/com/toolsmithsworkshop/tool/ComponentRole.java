@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 public enum ComponentRole {
     PICKAXE_HEAD("pickaxe_head", "Pickaxe Head"),
     AXE_HEAD("axe_head", "Axe Head"),
+    BATTLE_AXE_HEAD("battle_axe_head", "Battle Axe Head"),
     SHOVEL_HEAD("shovel_head", "Shovel Head"),
     SWORD_BLADE("sword_blade", "Sword Blade"),
     BINDING("tool_binding", "Tool Binding"),
@@ -29,7 +30,7 @@ public enum ComponentRole {
     }
 
     public boolean isHead() {
-        return this == PICKAXE_HEAD || this == AXE_HEAD || this == SHOVEL_HEAD || this == SWORD_BLADE;
+        return this == PICKAXE_HEAD || this == AXE_HEAD || this == BATTLE_AXE_HEAD || this == SHOVEL_HEAD || this == SWORD_BLADE;
     }
 
     private static ComponentRole byName(String name) {

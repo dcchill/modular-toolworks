@@ -15,9 +15,11 @@ public final class ToolStatCalculator {
         ToolMaterial grip = ToolMaterials.get(build.grip());
 
         float weight = weightedWeight(head, 1.0f) + weightedWeight(binding, 0.75f) + weightedWeight(grip, 0.40f);
+        if (binding == ToolMaterials.PHANTOM) weight *= 0.5f;
         if (isVanillaEquivalent(build)) {
-            return new ToolStats(head.durability(), head.miningSpeed(), head.miningLevel(),
-                    defaultAttackDamage(archetype, head), defaultAttackSpeed(archetype, head), weight, 0.0f);
+            float diamondSpeed = 1.0f + ToolGems.count(build, ToolGems.DIAMOND) * 0.25f;
+            return new ToolStats(head.durability(), head.miningSpeed() * diamondSpeed, head.miningLevel(),
+                    defaultAttackDamage(archetype, head), defaultAttackSpeed(archetype, head) * diamondSpeed, weight, 0.0f);
         }
 
         float durability = head.durability() * 0.35f + binding.durability() * 0.50f + grip.durability() * 0.15f;
@@ -48,7 +50,11 @@ public final class ToolStatCalculator {
             knockback = Math.min(0.75f, (normalizedWeight - 3.6f) * 0.22f);
         }
         if (archetype == ToolArchetype.AXE) damage += 1.0f;
+        if (archetype == ToolArchetype.BATTLE_AXE) damage += 4.0f;
         if (archetype == ToolArchetype.SWORD) damage += 2.0f;
+        float diamondSpeed = 1.0f + ToolGems.count(build, ToolGems.DIAMOND) * 0.25f;
+        miningSpeed *= diamondSpeed;
+        attackSpeed *= diamondSpeed;
 
         return new ToolStats(Math.max(1, Math.round(durability)), miningSpeed, miningLevel, damage,
                 Math.max(0.2f, attackSpeed), weight, knockback);
@@ -67,6 +73,7 @@ public final class ToolStatCalculator {
         if (archetype == ToolArchetype.SWORD) {
             return head == ToolMaterials.GOLD ? 4.0f : head.attackDamage() + 2.0f;
         }
+        if (archetype == ToolArchetype.BATTLE_AXE) return head.attackDamage() + 4.0f;
         if (head == ToolMaterials.NETHERITE) return 10.0f;
         if (head == ToolMaterials.STONE || head == ToolMaterials.IRON || head == ToolMaterials.DIAMOND) return 9.0f;
         if (head == ToolMaterials.WOOD || head == ToolMaterials.GOLD) return 7.0f;
@@ -75,7 +82,7 @@ public final class ToolStatCalculator {
 
     private static float defaultAttackSpeed(ToolArchetype archetype, ToolMaterial head) {
         if (archetype == ToolArchetype.PICKAXE) return 1.2f;
-        if (archetype == ToolArchetype.SHOVEL) return 1.0f;
+        if (archetype == ToolArchetype.SHOVEL || archetype == ToolArchetype.BATTLE_AXE) return 1.0f;
         if (archetype == ToolArchetype.SWORD) return 1.6f;
         if (head == ToolMaterials.WOOD || head == ToolMaterials.STONE) return 0.8f;
         if (head == ToolMaterials.IRON) return 0.9f;

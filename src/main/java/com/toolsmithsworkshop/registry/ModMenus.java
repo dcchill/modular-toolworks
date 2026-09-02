@@ -2,6 +2,7 @@ package com.toolsmithsworkshop.registry;
 
 import com.toolsmithsworkshop.ToolsmithsWorkshop;
 import com.toolsmithsworkshop.menu.BasicWorkshopMenu;
+import com.toolsmithsworkshop.menu.GemsettingMenu;
 import com.toolsmithsworkshop.menu.ToolsmithingMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -15,6 +16,8 @@ public final class ModMenus {
             "basic_workshop", () -> new MenuType<>(BasicWorkshopMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final DeferredHolder<MenuType<?>, MenuType<ToolsmithingMenu>> TOOLSMITHING = REGISTER.register(
             "toolsmithing", () -> new MenuType<>(ToolsmithingMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final DeferredHolder<MenuType<?>, MenuType<GemsettingMenu>> GEMSETTING = REGISTER.register(
+            "gemsetting", () -> new MenuType<>(GemsettingMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     private ModMenus() {}
 }

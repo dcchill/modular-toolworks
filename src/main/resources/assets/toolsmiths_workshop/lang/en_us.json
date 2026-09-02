@@ -4,10 +4,13 @@
   "block.toolsmiths_workshop.tier_3_workshop": "Tier 3 Workshop",
   "block.toolsmiths_workshop.tier_4_workshop": "Tier 4 Workshop",
   "block.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
+  "block.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
   "item.toolsmiths_workshop.pickaxe": "Modular Pickaxe",
   "item.toolsmiths_workshop.axe": "Modular Axe",
+  "item.toolsmiths_workshop.battle_axe": "Modular Battle Axe",
   "item.toolsmiths_workshop.sword": "Modular Sword",
   "container.toolsmiths_workshop.basic_workshop": "Basic Workshop",
   "container.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
+  "container.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
   "itemGroup.toolsmiths_workshop": "Toolsmith's Workshop"
 }

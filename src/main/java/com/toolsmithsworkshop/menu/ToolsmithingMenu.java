@@ -17,7 +17,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -40,7 +39,6 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     };
     private final ResultContainer result = new ResultContainer();
     private final ContainerLevelAccess access;
-    private final DataSlot selected = DataSlot.standalone();
 
     public ToolsmithingMenu(int id, Inventory inventory) {
         this(id, inventory, ContainerLevelAccess.NULL);
@@ -49,7 +47,6 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     public ToolsmithingMenu(int id, Inventory inventory, ContainerLevelAccess access) {
         super(ModMenus.TOOLSMITHING.get(), id);
         this.access = access;
-        addDataSlot(selected);
         addSlot(componentSlot(input, HEAD, 26, 27, true));
         addSlot(componentSlot(input, BINDING, 52, 27, false));
         addSlot(componentSlot(input, GRIP, 78, 27, false));
@@ -88,10 +85,6 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         };
     }
 
-    public ToolArchetype archetype() {
-        return ToolArchetype.values()[Math.max(0, Math.min(selected.get(), ToolArchetype.values().length - 1))];
-    }
-
     public ItemStack preview() {
         return result.getItem(0);
     }
@@ -119,12 +112,20 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         ToolComponentData head = componentData(headStack);
         ToolComponentData binding = componentData(input.getItem(BINDING));
         ToolComponentData grip = componentData(input.getItem(GRIP));
-        if (head == null || binding == null || grip == null || head.role() != archetype().headRole()
+        ToolArchetype archetype = head == null ? null : archetypeFor(head);
+        if (archetype == null || binding == null || grip == null || head.role() != archetype.headRole()
                 || binding.role() != ComponentRole.BINDING || grip.role() != ComponentRole.GRIP) return ItemStack.EMPTY;
 
-        ModularToolItem item = ModItems.tool(archetype()).get();
+        ModularToolItem item = ModItems.tool(archetype).get();
         if (input.getItem(FORGING_HAMMER).isEmpty()) return ItemStack.EMPTY;
         return ModularToolItem.create(item, new ToolBuildData(head.material(), binding.material(), grip.material()));
+    }
+
+    private static ToolArchetype archetypeFor(ToolComponentData head) {
+        for (ToolArchetype archetype : ToolArchetype.values()) {
+            if (head.role() == archetype.headRole()) return archetype;
+        }
+        return null;
     }
 
     private static ToolComponentData componentData(ItemStack stack) {
@@ -155,12 +156,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (id >= 0 && id < ToolArchetype.values().length) {
-            selected.set(id);
-            slotsChanged(input);
-            return true;
-        }
-        if (id == ToolArchetype.values().length && !preview().isEmpty()) {
+        if (id == 0 && !preview().isEmpty()) {
             ItemStack output = preview().copy();
             if (player.getInventory().add(output)) return consumeInputs();
         }

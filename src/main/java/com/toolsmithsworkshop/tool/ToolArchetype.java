@@ -7,10 +7,12 @@ public enum ToolArchetype {
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     AXE("axe", "Axe", ComponentRole.AXE_HEAD, 1.00f, 1.0f,
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
+    BATTLE_AXE("battle_axe", "Battle Axe", ComponentRole.BATTLE_AXE_HEAD, 1.00f, 1.0f,
+            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     SHOVEL("shovel", "Shovel", ComponentRole.SHOVEL_HEAD, 1.00f, 1.0f,
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     SWORD("sword", "Sword", ComponentRole.SWORD_BLADE, 1.60f, 1.0f,
-            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT);
+            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.SWORD_GRIP);
 
     public static final Codec<ToolArchetype> CODEC = Codec.STRING.xmap(ToolArchetype::byName, ToolArchetype::serializedName);
 

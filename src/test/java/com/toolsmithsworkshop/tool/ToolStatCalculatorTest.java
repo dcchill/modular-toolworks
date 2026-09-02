@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 class ToolStatCalculatorTest {
     @Test
     void woodenShaftUsesHeadDefaults() {
@@ -70,5 +72,27 @@ class ToolStatCalculatorTest {
 
         assertTrue(light.attackSpeed() > heavy.attackSpeed());
         assertTrue(heavy.attackDamage() > light.attackDamage());
+    }
+
+    @Test
+    void diamondGemsIncreaseMiningAndAttackSpeed() {
+        ToolBuildData plain = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
+        ToolBuildData socketed = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
+                List.of(ToolGems.DIAMOND));
+
+        ToolStats base = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, plain);
+        ToolStats gemmed = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, socketed);
+        assertEquals(base.miningSpeed() * 1.25f, gemmed.miningSpeed());
+        assertEquals(base.attackSpeed() * 1.25f, gemmed.attackSpeed());
+    }
+
+    @Test
+    void battleAxeHitsHarderAndSlowerThanSword() {
+        ToolBuildData build = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
+        ToolStats battleAxe = ToolStatCalculator.calculate(ToolArchetype.BATTLE_AXE, build);
+        ToolStats sword = ToolStatCalculator.calculate(ToolArchetype.SWORD, build);
+
+        assertTrue(battleAxe.attackDamage() > sword.attackDamage());
+        assertTrue(battleAxe.attackSpeed() < sword.attackSpeed());
     }
 }

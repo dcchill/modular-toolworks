@@ -2,6 +2,7 @@ package com.toolsmithsworkshop.registry;
 
 import com.toolsmithsworkshop.ToolsmithsWorkshop;
 import com.toolsmithsworkshop.block.BasicWorkshopBlock;
+import com.toolsmithsworkshop.block.GemsettingBenchBlock;
 import com.toolsmithsworkshop.block.ToolsmithingWorkbenchBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -25,6 +26,9 @@ public final class ModBlocks {
     public static final DeferredBlock<ToolsmithingWorkbenchBlock> TOOLSMITHING_WORKBENCH = REGISTER.registerBlock(
             "toolsmithing_workbench", ToolsmithingWorkbenchBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
+    public static final DeferredBlock<GemsettingBenchBlock> GEMSETTING_BENCH = REGISTER.registerBlock(
+            "gemsetting_bench", GemsettingBenchBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.SMITHING_TABLE));
 
     private ModBlocks() {}
 }
