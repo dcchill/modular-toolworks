@@ -17,8 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWorkshopMenu> {
-    private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(
-            ToolsmithsWorkshop.MOD_ID, "textures/gui/basic_workbench_gui.png");
+    private static final int GUI_WIDTH = 176;
+    private static final ResourceLocation[] GUIS = {
+            ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "textures/gui/basic_workbench_gui.png"),
+            ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "textures/gui/tier_2_workbench_gui.png"),
+            ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "textures/gui/tier_3_workbench_gui.png"),
+            ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "textures/gui/tier_4_workbench_gui.png")
+    };
     private static final ItemStack[] PART_ICONS = {
             icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.SHOVEL_HEAD),
             icon(ComponentRole.SWORD_BLADE), icon(ComponentRole.BATTLE_AXE_HEAD),
@@ -28,7 +33,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
 
     public BasicWorkshopScreen(BasicWorkshopMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 286;
         imageHeight = 166;
     }
 
@@ -55,8 +60,9 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         renderPanel(graphics, leftPos - 98, topPos + 4, 96, 108);
-        renderPanel(graphics, leftPos + imageWidth + 2, topPos + 4, 108, 108);
-        graphics.blit(GUI, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+        renderPanel(graphics, leftPos + GUI_WIDTH + 2, topPos + 4, 108, 108);
+        graphics.blit(GUIS[Math.max(1, Math.min(menu.workshopTier(), GUIS.length)) - 1], leftPos, topPos,
+                0, 0, GUI_WIDTH, imageHeight, GUI_WIDTH, imageHeight);
     }
 
     @Override
@@ -72,13 +78,13 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
         }
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, "Parts", leftPos - 50, topPos + 11, 0xFFFFFF);
-        graphics.drawString(font, "Tier " + menu.workshopTier(), leftPos + imageWidth + 10, topPos + 12, 0xFFFFFF, false);
+        graphics.drawString(font, "Tier " + menu.workshopTier(), leftPos + GUI_WIDTH + 10, topPos + 12, 0xFFFFFF, false);
         for (int i = 0; i < partButtons.size(); i++) {
             Button button = partButtons.get(i);
             graphics.renderItem(PART_ICONS[i], button.getX() + 5, button.getY() + 5);
         }
 
-        int infoX = leftPos + imageWidth + 10;
+        int infoX = leftPos + GUI_WIDTH + 10;
         graphics.drawString(font, menu.selectedPart().displayName(), infoX, topPos + 24, 0xFFFFFF, false);
         graphics.drawString(font, "Cost", infoX, topPos + 42, 0xA0A0A0, false);
         graphics.drawString(font, BasicWorkshopMenu.requiredCount(menu.selectedPart()) + " material", infoX, topPos + 54,

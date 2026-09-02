@@ -28,7 +28,7 @@ public final class ToolsmithsWorkshopClient {
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         ItemColor color = (stack, tintIndex) -> {
             var data = stack.get(ModDataComponents.TOOL_COMPONENT);
-            return data == null || data.material().equals(ToolMaterials.SLIME.id()) || data.material().equals(ToolMaterials.PHANTOM.id()) ? 0xFFFFFFFF : materialColor(data.material().getPath());
+            return data == null || data.material().equals(ToolMaterials.SLIME.id()) || data.material().equals(ToolMaterials.PHANTOM.id()) || data.material().equals(ToolMaterials.SCULK.id()) || data.material().equals(ToolMaterials.CACTUS.id()) ? 0xFFFFFFFF : materialColor(data.material().getPath());
         };
         for (ToolArchetype archetype : ToolArchetype.values()) {
             event.register(color, ModItems.visual(archetype, archetype.headRole()).get(),
@@ -36,7 +36,9 @@ public final class ToolsmithsWorkshopClient {
                     ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.GRIP).get(),
                     ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.BINDING, ToolMaterials.SLIME.id()).get(),
                     ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.BINDING, ToolMaterials.PHANTOM.id()).get(),
+                    ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.BINDING, ToolMaterials.SCULK.id()).get(),
                     ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.GRIP, ToolMaterials.BONE.id()).get(),
+                    ModItems.visual(archetype, com.toolsmithsworkshop.tool.ComponentRole.GRIP, ToolMaterials.CACTUS.id()).get(),
                     ModItems.gemVisual(archetype).get());
         }
         for (var role : com.toolsmithsworkshop.tool.ComponentRole.values()) {
@@ -56,6 +58,8 @@ public final class ToolsmithsWorkshopClient {
             case "quartz" -> 0xFFC7B9A7;
             case "diamond" -> 0xFF55E8D1;
             case "emerald" -> 0xFF17C46B;
+            case "ender_pearl" -> 0xFF55D8D3;
+            case "echo_shard" -> 0xFF2D8291;
             case "obsidian" -> 0xFF271E3D;
             case "netherite" -> 0xFF4F3C3E;
             default -> 0xFFFFFFFF;

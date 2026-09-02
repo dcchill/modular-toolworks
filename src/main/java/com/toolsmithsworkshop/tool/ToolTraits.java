@@ -19,7 +19,9 @@ public final class ToolTraits {
         add("hardened", "Hardened", 1.10f, 1.00f, 1.00f, 0.00f, 1, 1.00f);
         add("sticky", "Sticky", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
         add("brittle", "Brittle", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
+        add("spiky", "Spiky", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
         add("winged", "Winged", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
+        add("resonant", "Resonant", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
     }
 
     private ToolTraits() {}

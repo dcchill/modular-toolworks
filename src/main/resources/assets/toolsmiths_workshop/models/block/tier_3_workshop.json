@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "minecraft:block/anvil",
+    "front": "toolsmiths_workshop:block/tier_3_workshop_front",
+    "side": "toolsmiths_workshop:block/tier_3_workshop_side",
+    "bottom": "minecraft:block/spruce_planks",
+    "particle": "toolsmiths_workshop:block/tier_3_workshop_side"
+  }
+}

@@ -47,14 +47,14 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     public ToolsmithingMenu(int id, Inventory inventory, ContainerLevelAccess access) {
         super(ModMenus.TOOLSMITHING.get(), id);
         this.access = access;
-        addSlot(componentSlot(input, HEAD, 26, 27, true));
-        addSlot(componentSlot(input, BINDING, 52, 27, false));
-        addSlot(componentSlot(input, GRIP, 78, 27, false));
-        addSlot(new Slot(input, FORGING_HAMMER, 104, 53) {
+        addSlot(componentSlot(input, HEAD, 44, 10, true));
+        addSlot(componentSlot(input, BINDING, 44, 30, false));
+        addSlot(componentSlot(input, GRIP, 44, 49, false));
+        addSlot(new Slot(input, FORGING_HAMMER, 80, 29) {
             @Override public boolean mayPlace(ItemStack stack) { return stack.getItem() instanceof ForgingHammerItem; }
         });
-        addSlot(new Slot(input, REPAIR, 52, 53));
-        addSlot(new Slot(result, 0, 130, 34) {
+        addSlot(new Slot(input, REPAIR, 80, 46));
+        addSlot(new Slot(result, 0, 116, 29) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
             @Override public void onTake(Player player, ItemStack stack) {
                 consumeInputs();

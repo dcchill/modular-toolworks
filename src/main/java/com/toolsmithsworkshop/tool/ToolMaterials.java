@@ -17,8 +17,10 @@ public final class ToolMaterials {
     public static final ToolMaterial COPPER = add("copper", "Copper", 1, 210, 5.2f, 1, 1.65f, 3.5f, 0.05f, Items.COPPER_INGOT, "conductive");
     public static final ToolMaterial SLIME = add("slime", "Slime", 2, 225, 7.0f, 0, 0.45f, 2.5f, 0.20f, Items.SLIME_BALL, "sticky");
     public static final ToolMaterial BONE = add("bone", "Bone", 2, 90, 3.0f, 0, 0.60f, 3.0f, 0.05f, Items.BONE, "brittle");
+    public static final ToolMaterial CACTUS = add("cactus", "Cactus", 1, 80, 20.0f, 0, 0.45f, 2.5f, 0.10f, Items.CACTUS, "spiky");
     public static final ToolMaterial PHANTOM = add("phantom", "Phantom", 2, 100, 4.0f, 0, 0.25f, 2.0f, 0.15f, Items.PHANTOM_MEMBRANE, "winged");
     public static final ToolMaterial IRON = add("iron", "Iron", 2, 250, 6.0f, 2, 1.55f, 4.0f, 0.0f, Items.IRON_INGOT, "reliable");
+    public static final ToolMaterial SCULK = add("sculk", "Sculk", 4, 200, 5.5f, 2, 0.30f, 3.0f, 0.15f, Items.SCULK, "resonant");
     public static final ToolMaterial QUARTZ = add("quartz", "Quartz", 2, 190, 6.0f, 2, 1.40f, 4.0f, 0.04f, Items.QUARTZ, "reliable");
     public static final ToolMaterial GOLD = add("gold", "Gold", 2, 32, 12.0f, 0, 1.20f, 2.5f, 0.35f, Items.GOLD_INGOT, "refined");
     public static final ToolMaterial DIAMOND = add("diamond", "Diamond", 3, 1561, 8.0f, 3, 1.45f, 5.0f, 0.10f, Items.DIAMOND, "hardened");

@@ -13,31 +13,44 @@ import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import com.toolsmithsworkshop.tool.ToolStats;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class ModularToolItem extends Item {
     private static final int DIGGING_MOMENTUM_WINDOW_TICKS = 25;
     private static final int MAX_MOMENTUM_STACKS = 16;
+    private static final int MAX_ECHO_VEIN_BLOCKS = 32;
+    private static final Set<UUID> ECHO_VEIN_MINERS = new HashSet<>();
     private static final ResourceLocation DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_damage");
     private static final ResourceLocation SPEED_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_speed");
     private static final ResourceLocation KNOCKBACK_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_knockback");
@@ -150,6 +163,11 @@ public final class ModularToolItem extends Item {
             ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
             if (archetype == ToolArchetype.PICKAXE && isSticky(build)) addMomentum(stack, level.getGameTime());
             damage(stack, archetype == ToolArchetype.PICKAXE && isBrittle(build) && level.random.nextBoolean() ? 3 : 1, miner);
+            if (build != null && ToolGems.count(build, ToolGems.ECHO_SHARD) > 0 && miner instanceof ServerPlayer player
+                    && archetype != ToolArchetype.SWORD && archetype != ToolArchetype.BATTLE_AXE && isOre(state)) {
+                mineEchoVein(player, stack, state, pos);
+            }
+            applyCactusThorns(build, miner);
         }
         return true;
     }
@@ -157,8 +175,59 @@ public final class ModularToolItem extends Item {
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!attacker.level().isClientSide && build != null && ToolGems.count(build, ToolGems.ECHO_SHARD) > 0
+                && attacker instanceof ServerPlayer player && (archetype == ToolArchetype.SWORD || archetype == ToolArchetype.BATTLE_AXE)) {
+            float damage = ToolStatCalculator.calculate(archetype, build).attackDamage();
+            for (Mob mob : attacker.level().getEntitiesOfClass(Mob.class, target.getBoundingBox().inflate(3),
+                    mob -> mob != target && mob instanceof Enemy && mob.isAlive()).stream().limit(2).toList()) {
+                mob.hurt(player.damageSources().playerAttack(player), damage);
+                drawEchoPath((ServerLevel) attacker.level(), target.position(), mob.position());
+            }
+        }
         damage(stack, archetype == ToolArchetype.SWORD && isBrittle(build) ? 4 : 2, attacker);
+        applyCactusThorns(build, attacker);
         return true;
+    }
+
+    private void mineEchoVein(ServerPlayer player, ItemStack stack, BlockState origin, BlockPos pos) {
+        if (!ECHO_VEIN_MINERS.add(player.getUUID())) return;
+        try {
+            Level level = player.level();
+            ArrayDeque<BlockPos> pending = new ArrayDeque<>();
+            Set<BlockPos> visited = new HashSet<>();
+            pending.add(pos);
+            visited.add(pos);
+            int broken = 0;
+            while (!pending.isEmpty() && broken < MAX_ECHO_VEIN_BLOCKS) {
+                BlockPos current = pending.removeFirst();
+                for (Direction direction : Direction.values()) {
+                    BlockPos next = current.relative(direction);
+                    if (!visited.add(next)) continue;
+                    BlockState state = level.getBlockState(next);
+                    if (state.getBlock() != origin.getBlock() || !isCorrectToolForDrops(stack, state)) continue;
+                    if (player.gameMode.destroyBlock(next)) {
+                        broken++;
+                        drawEchoPath((ServerLevel) level, Vec3.atCenterOf(current), Vec3.atCenterOf(next));
+                        pending.addLast(next);
+                    }
+                }
+            }
+        } finally {
+            ECHO_VEIN_MINERS.remove(player.getUUID());
+        }
+    }
+
+    private static boolean isOre(BlockState state) {
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().contains("ore");
+    }
+
+    private static void drawEchoPath(ServerLevel level, Vec3 from, Vec3 to) {
+        int steps = Math.max(1, (int) Math.ceil(from.distanceTo(to) * 3));
+        for (int i = 1; i < steps; i++) {
+            double progress = i / (double) steps;
+            level.sendParticles(ParticleTypes.SCULK_SOUL, from.x + (to.x - from.x) * progress,
+                    from.y + (to.y - from.y) * progress, from.z + (to.z - from.z) * progress, 1, 0, 0, 0, 0);
+        }
     }
 
     private static void damage(ItemStack stack, int amount, LivingEntity entity) {
@@ -177,6 +246,13 @@ public final class ModularToolItem extends Item {
 
     private static boolean isBrittle(ToolBuildData build) {
         return build != null && build.grip().equals(ToolMaterials.BONE.id());
+    }
+
+    private static void applyCactusThorns(ToolBuildData build, LivingEntity holder) {
+        if (build != null && build.grip().equals(ToolMaterials.CACTUS.id()) && !holder.level().isClientSide
+                && holder.getRandom().nextFloat() < 0.25f) {
+            holder.hurt(holder.damageSources().cactus(), 1.0f);
+        }
     }
 
     private static float momentumMultiplier(ItemStack stack) {
@@ -233,8 +309,14 @@ public final class ModularToolItem extends Item {
         tooltip.add(stat("Weight", stats.weight()));
         int diamonds = ToolGems.count(build, ToolGems.DIAMOND);
         int emeralds = ToolGems.count(build, ToolGems.EMERALD);
+        int enderPearls = ToolGems.count(build, ToolGems.ENDER_PEARL);
+        int echoShards = ToolGems.count(build, ToolGems.ECHO_SHARD);
         if (diamonds > 0) tooltip.add(Component.literal("Diamond Gems: +" + (diamonds * 25) + "% speed").withStyle(ChatFormatting.AQUA));
         if (emeralds > 0) tooltip.add(Component.literal("Emerald Gems: +" + emeralds + " Fortune / Looting").withStyle(ChatFormatting.GREEN));
+        if (enderPearls > 0) tooltip.add(Component.literal("Ender Pearl Gems: drops teleport to you").withStyle(ChatFormatting.LIGHT_PURPLE));
+        if (echoShards > 0) tooltip.add(Component.literal(weapon ? "Echo Shard Gems: chains attacks to 2 hostile mobs" : "Echo Shard Gems: mines connected ore veins").withStyle(ChatFormatting.DARK_AQUA));
+        if (build.binding().equals(ToolMaterials.SCULK.id())) tooltip.add(Component.literal("Sculk Binding: 4 durability repaired per XP").withStyle(ChatFormatting.DARK_AQUA));
+        if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: 50% double damage; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
         tooltip.add(Component.literal("Traits: " + String.join(", ", ToolStatCalculator.activeTraits(build).values().stream().map(MaterialTrait::displayName).toList())).withStyle(ChatFormatting.GOLD));
         if (flag.hasShiftDown()) {
             tooltip.add(Component.empty());
@@ -243,7 +325,7 @@ public final class ModularToolItem extends Item {
             tooltip.add(Component.literal("Grip drives handling and attack speed.").withStyle(ChatFormatting.DARK_GRAY));
             if (!build.modules().isEmpty()) tooltip.add(Component.literal("Modules: " + build.modules().size()).withStyle(ChatFormatting.DARK_AQUA));
         } else {
-            tooltip.add(Component.literal("Hold Shift for component details").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.literal("[Shift for Info]").withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 

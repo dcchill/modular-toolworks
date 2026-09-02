@@ -36,9 +36,9 @@ public final class GemsettingMenu extends AbstractContainerMenu {
     public GemsettingMenu(int id, Inventory inventory, ContainerLevelAccess access) {
         super(ModMenus.GEMSETTING.get(), id);
         this.access = access;
-        addSlot(new Slot(input, TOOL, 44, 29) { @Override public boolean mayPlace(ItemStack stack) { return stack.getItem() instanceof ModularToolItem; } });
+        addSlot(new Slot(input, TOOL, 42, 29) { @Override public boolean mayPlace(ItemStack stack) { return stack.getItem() instanceof ModularToolItem; } });
         addSlot(new Slot(input, GEM, 80, 29) { @Override public boolean mayPlace(ItemStack stack) { return ToolGems.isGem(stack); } });
-        addSlot(new Slot(result, 0, 116, 29) {
+        addSlot(new Slot(result, 0, 118, 29) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
             @Override public void onTake(Player player, ItemStack stack) {
                 input.removeItem(TOOL, 1);

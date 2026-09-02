@@ -3,7 +3,7 @@
   "category": "misc",
   "pattern": ["III", "SCS", "SSS"],
   "key": {
-    "I": { "item": "minecraft:iron_ingot" },
+    "I": { "item": "minecraft:flint" },
     "S": { "item": "minecraft:spruce_planks" },
     "C": { "item": "minecraft:crafting_table" }
   },

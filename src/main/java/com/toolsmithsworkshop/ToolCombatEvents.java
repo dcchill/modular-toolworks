@@ -9,10 +9,14 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.enchanting.GetEnchantmentLevelEvent;
+import net.neoforged.neoforge.event.level.BlockDropsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 @EventBusSubscriber(modid = ToolsmithsWorkshop.MOD_ID)
 public final class ToolCombatEvents {
@@ -44,5 +48,40 @@ public final class ToolCombatEvents {
         event.getHolder(Enchantments.LOOTING).ifPresent(looting -> {
             if (event.isTargetting(looting)) event.getEnchantments().upgrade(looting, event.getEnchantments().getLevel(looting) + level);
         });
+    }
+
+    @SubscribeEvent
+    public static void teleportEnderPearlGemDrops(BlockDropsEvent event) {
+        if (!(event.getBreaker() instanceof Player player)) return;
+        var build = event.getTool().get(ModDataComponents.TOOL_BUILD);
+        if (!(event.getTool().getItem() instanceof ModularToolItem) || build == null
+                || ToolGems.count(build, ToolGems.ENDER_PEARL) == 0) return;
+        for (var drop : event.getDrops()) {
+            drop.setPos(player.getX(), player.getY() + 0.5, player.getZ());
+            drop.setPickUpDelay(0);
+        }
+    }
+
+    @SubscribeEvent
+    public static void mendSculkBinding(PlayerXpEvent.PickupXp event) {
+        Player player = event.getEntity();
+        if (player.level().isClientSide) return;
+        var stack = player.getMainHandItem();
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!(stack.getItem() instanceof ModularToolItem) || build == null || !build.binding().equals(ToolMaterials.SCULK.id())
+                || !stack.isDamaged() || event.getOrb().value <= 0) return;
+        int repaired = Math.min(stack.getDamageValue(), event.getOrb().value * 4);
+        stack.setDamageValue(stack.getDamageValue() - repaired);
+        event.getOrb().value -= (repaired + 3) / 4;
+    }
+
+    @SubscribeEvent
+    public static void applyCactusGripDamage(LivingDamageEvent.Pre event) {
+        if (event.getEntity().level().isClientSide || !(event.getSource().getEntity() instanceof Player player)) return;
+        var stack = player.getMainHandItem();
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!(stack.getItem() instanceof ModularToolItem tool) || build == null || !build.grip().equals(ToolMaterials.CACTUS.id())
+                || (tool.archetype() != ToolArchetype.SWORD && tool.archetype() != ToolArchetype.BATTLE_AXE)) return;
+        if (player.getRandom().nextFloat() < 0.50f) event.setNewDamage(event.getNewDamage() * 2.0f);
     }
 }
