@@ -20,6 +20,8 @@ public final class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ToolMomentum>> MOMENTUM =
             REGISTER.registerComponentType("momentum", builder -> builder.persistent(ToolMomentum.CODEC)
                     .networkSynchronized(ByteBufCodecs.fromCodec(ToolMomentum.CODEC)));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> PROSPECTING_ACTIVE =
+            REGISTER.registerComponentType("prospecting_active", builder -> builder.networkSynchronized(ByteBufCodecs.BOOL));
 
     private ModDataComponents() {}
 }

@@ -43,6 +43,11 @@ public final class ToolComponentItem extends Item {
         tooltip.add(Component.literal("Handling: " + String.format(Locale.ROOT, "%.2f", material.handling())).withStyle(ChatFormatting.BLUE));
         tooltip.add(Component.literal("Property: " + ToolTraits.get(material.trait()).displayName()).withStyle(ChatFormatting.GOLD));
         if (material == ToolMaterials.SCULK) tooltip.add(Component.literal("Mends 4 durability per XP").withStyle(ChatFormatting.DARK_AQUA));
-        if (material == ToolMaterials.CACTUS) tooltip.add(Component.literal("25% self-thorns; weapons have 50% double damage").withStyle(ChatFormatting.GREEN));
+        if (material == ToolMaterials.CACTUS && data.role() == com.toolsmithsworkshop.tool.ComponentRole.GRIP)
+            tooltip.add(Component.literal("25% self-thorns; weapons gain 50% custom critical rate").withStyle(ChatFormatting.GREEN));
+        if (material == ToolMaterials.BONE && data.role() == com.toolsmithsworkshop.tool.ComponentRole.GRIP)
+            tooltip.add(Component.literal("Sword custom criticals deal 30% more damage").withStyle(ChatFormatting.GREEN));
+        if (material == ToolMaterials.SLIME && data.role() == com.toolsmithsworkshop.tool.ComponentRole.BINDING)
+            tooltip.add(Component.literal("Sword custom criticals slow the target").withStyle(ChatFormatting.GREEN));
     }
 }

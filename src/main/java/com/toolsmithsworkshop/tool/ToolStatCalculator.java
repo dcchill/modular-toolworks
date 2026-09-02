@@ -18,8 +18,9 @@ public final class ToolStatCalculator {
         if (binding == ToolMaterials.PHANTOM) weight *= 0.5f;
         if (isVanillaEquivalent(build)) {
             float diamondSpeed = 1.0f + ToolGems.count(build, ToolGems.DIAMOND) * 0.25f;
-            return new ToolStats(head.durability(), head.miningSpeed() * diamondSpeed, head.miningLevel(),
-                    defaultAttackDamage(archetype, head), defaultAttackSpeed(archetype, head) * diamondSpeed, weight, 0.0f);
+            return applyPartStats(new ToolStats(head.durability(), head.miningSpeed() * diamondSpeed, head.miningLevel(),
+                    defaultAttackDamage(archetype, head), defaultAttackSpeed(archetype, head) * diamondSpeed, weight, 0.0f),
+                    archetype, build);
         }
 
         float durability = head.durability() * 0.35f + binding.durability() * 0.50f + grip.durability() * 0.15f;
@@ -56,8 +57,16 @@ public final class ToolStatCalculator {
         miningSpeed *= diamondSpeed;
         attackSpeed *= diamondSpeed;
 
-        return new ToolStats(Math.max(1, Math.round(durability)), miningSpeed, miningLevel, damage,
-                Math.max(0.2f, attackSpeed), weight, knockback);
+        return applyPartStats(new ToolStats(Math.max(1, Math.round(durability)), miningSpeed, miningLevel, damage,
+                Math.max(0.2f, attackSpeed), weight, knockback), archetype, build);
+    }
+
+    private static ToolStats applyPartStats(ToolStats stats, ToolArchetype archetype, ToolBuildData build) {
+        float attack = archetype.isWeapon() ? 1.0f + build.percent(PartStat.Type.ATTACK) / 100.0f : 1.0f;
+        float miningSpeed = archetype.isWeapon() ? 1.0f : 1.0f + build.percent(PartStat.Type.MINING_SPEED) / 100.0f;
+        float durability = 1.0f - build.percent(PartStat.Type.FRAGILE) / 100.0f;
+        return new ToolStats(Math.max(1, Math.round(stats.durability() * durability)), stats.miningSpeed() * miningSpeed,
+                stats.miningLevel(), stats.attackDamage() * attack, stats.attackSpeed(), stats.weight(), stats.knockback());
     }
 
     private static float weightedWeight(ToolMaterial material, float roleFactor) {

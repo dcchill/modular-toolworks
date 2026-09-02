@@ -3,6 +3,7 @@ package com.toolsmithsworkshop.item;
 import com.toolsmithsworkshop.ToolsmithsWorkshop;
 import com.toolsmithsworkshop.registry.ModDataComponents;
 import com.toolsmithsworkshop.tool.MaterialTrait;
+import com.toolsmithsworkshop.tool.PartStat;
 import com.toolsmithsworkshop.tool.ToolArchetype;
 import com.toolsmithsworkshop.tool.ToolBuildData;
 import com.toolsmithsworkshop.tool.ToolMaterial;
@@ -22,6 +23,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
@@ -168,6 +170,7 @@ public final class ModularToolItem extends Item {
                 mineEchoVein(player, stack, state, pos);
             }
             applyCactusThorns(build, miner);
+            addExhaustion(build, miner, 0.005f);
         }
         return true;
     }
@@ -186,6 +189,7 @@ public final class ModularToolItem extends Item {
         }
         damage(stack, archetype == ToolArchetype.SWORD && isBrittle(build) ? 4 : 2, attacker);
         applyCactusThorns(build, attacker);
+        addExhaustion(build, attacker, 0.1f);
         return true;
     }
 
@@ -230,10 +234,21 @@ public final class ModularToolItem extends Item {
         }
     }
 
-    private static void damage(ItemStack stack, int amount, LivingEntity entity) {
+    private void damage(ItemStack stack, int amount, LivingEntity entity) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (build != null && !archetype.isWeapon()) {
+            if (stack.isDamaged() && entity.getRandom().nextFloat() < chance(build, PartStat.Type.RECOVERY)) {
+                stack.setDamageValue(stack.getDamageValue() - 1);
+                return;
+            }
+            if (entity.getRandom().nextFloat() < chance(build, PartStat.Type.PRECISION)) return;
+        }
         if (build != null && hasMaterial(build, ToolMaterials.IRON.id()) && entity.getRandom().nextFloat() < 0.10f) return;
         stack.hurtAndBreak(amount, entity, EquipmentSlot.MAINHAND);
+    }
+
+    private static float chance(ToolBuildData build, PartStat.Type type) {
+        return Math.min(1.0f, build.percent(type) / 100.0f);
     }
 
     private static boolean hasMaterial(ToolBuildData build, ResourceLocation material) {
@@ -252,6 +267,12 @@ public final class ModularToolItem extends Item {
         if (build != null && build.grip().equals(ToolMaterials.CACTUS.id()) && !holder.level().isClientSide
                 && holder.getRandom().nextFloat() < 0.25f) {
             holder.hurt(holder.damageSources().cactus(), 1.0f);
+        }
+    }
+
+    private static void addExhaustion(ToolBuildData build, LivingEntity holder, float vanillaCost) {
+        if (build != null && holder instanceof Player player) {
+            player.causeFoodExhaustion(vanillaCost * build.percent(PartStat.Type.EXHAUSTING) / 100.0f);
         }
     }
 
@@ -307,6 +328,10 @@ public final class ModularToolItem extends Item {
         if (weapon) tooltip.add(stat("Attack Speed", stats.attackSpeed()));
         tooltip.add(Component.literal("Durability: " + (stack.getMaxDamage() - stack.getDamageValue()) + " / " + stack.getMaxDamage()).withStyle(ChatFormatting.BLUE));
         tooltip.add(stat("Weight", stats.weight()));
+        for (PartStat.Type type : PartStat.Type.values()) {
+            int percent = build.percent(type);
+            if (percent > 0) tooltip.add(partStat(type, percent));
+        }
         int diamonds = ToolGems.count(build, ToolGems.DIAMOND);
         int emeralds = ToolGems.count(build, ToolGems.EMERALD);
         int enderPearls = ToolGems.count(build, ToolGems.ENDER_PEARL);
@@ -316,7 +341,11 @@ public final class ModularToolItem extends Item {
         if (enderPearls > 0) tooltip.add(Component.literal("Ender Pearl Gems: drops teleport to you").withStyle(ChatFormatting.LIGHT_PURPLE));
         if (echoShards > 0) tooltip.add(Component.literal(weapon ? "Echo Shard Gems: chains attacks to 2 hostile mobs" : "Echo Shard Gems: mines connected ore veins").withStyle(ChatFormatting.DARK_AQUA));
         if (build.binding().equals(ToolMaterials.SCULK.id())) tooltip.add(Component.literal("Sculk Binding: 4 durability repaired per XP").withStyle(ChatFormatting.DARK_AQUA));
-        if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: 50% double damage; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
+        if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: +50% custom critical rate; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
+        if (archetype == ToolArchetype.SWORD && build.grip().equals(ToolMaterials.BONE.id()))
+            tooltip.add(Component.literal("Bone Grip: custom criticals deal 30% more damage").withStyle(ChatFormatting.GREEN));
+        if (archetype == ToolArchetype.SWORD && build.binding().equals(ToolMaterials.SLIME.id()))
+            tooltip.add(Component.literal("Slime Binding: custom criticals slow the target").withStyle(ChatFormatting.GREEN));
         tooltip.add(Component.literal("Traits: " + String.join(", ", ToolStatCalculator.activeTraits(build).values().stream().map(MaterialTrait::displayName).toList())).withStyle(ChatFormatting.GOLD));
         if (flag.hasShiftDown()) {
             tooltip.add(Component.empty());
@@ -331,6 +360,11 @@ public final class ModularToolItem extends Item {
 
     private static Component stat(String label, float value) {
         return Component.literal(label + ": " + String.format(Locale.ROOT, "%.2f", value)).withStyle(ChatFormatting.BLUE);
+    }
+
+    private static Component partStat(PartStat.Type type, int percent) {
+        String text = type.displayName() + ": " + (type.positive() ? "+" : "") + percent + "%";
+        return Component.literal(text).withStyle(type.positive() ? ChatFormatting.GREEN : ChatFormatting.RED);
     }
 
     public static String miningLevelName(int level) {

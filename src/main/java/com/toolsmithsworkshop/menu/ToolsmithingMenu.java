@@ -11,6 +11,7 @@ import com.toolsmithsworkshop.tool.ToolArchetype;
 import com.toolsmithsworkshop.tool.ToolBuildData;
 import com.toolsmithsworkshop.tool.ToolComponentData;
 import com.toolsmithsworkshop.tool.ToolMaterials;
+import com.toolsmithsworkshop.tool.PartStat;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,6 +22,9 @@ import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ToolsmithingMenu extends AbstractContainerMenu {
     public static final int HEAD = 0;
@@ -57,6 +61,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         addSlot(new Slot(result, 0, 116, 29) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
             @Override public void onTake(Player player, ItemStack stack) {
+                finishCraftedTool(stack, player);
                 consumeInputs();
                 super.onTake(player, stack);
             }
@@ -121,6 +126,17 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         return ModularToolItem.create(item, new ToolBuildData(head.material(), binding.material(), grip.material()));
     }
 
+    private void finishCraftedTool(ItemStack stack, Player player) {
+        if (input.getItem(HEAD).getItem() instanceof ModularToolItem || !(stack.getItem() instanceof ModularToolItem item)) return;
+        ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (build == null || !build.partStats().isEmpty()) return;
+        List<PartStat> stats = new ArrayList<>(3);
+        for (int i = 0; i < 3; i++) stats.add(PartStat.roll(player.getRandom(), item.archetype().isWeapon()));
+        stack.set(ModDataComponents.TOOL_BUILD,
+                new ToolBuildData(build.head(), build.binding(), build.grip(), build.modules(), stats));
+        ModularToolItem.refreshStats(stack, item);
+    }
+
     private static ToolArchetype archetypeFor(ToolComponentData head) {
         for (ToolArchetype archetype : ToolArchetype.values()) {
             if (head.role() == archetype.headRole()) return archetype;
@@ -158,6 +174,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     public boolean clickMenuButton(Player player, int id) {
         if (id == 0 && !preview().isEmpty()) {
             ItemStack output = preview().copy();
+            finishCraftedTool(output, player);
             if (player.getInventory().add(output)) return consumeInputs();
         }
         return false;
@@ -169,6 +186,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return moved;
         ItemStack source = slot.getItem();
+        if (index == RESULT) finishCraftedTool(source, player);
         moved = source.copy();
         if (index == RESULT) {
             if (!moveItemStackTo(source, 5, 41, true)) return ItemStack.EMPTY;

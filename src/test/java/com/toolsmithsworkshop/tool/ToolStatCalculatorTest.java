@@ -95,4 +95,36 @@ class ToolStatCalculatorTest {
         assertTrue(battleAxe.attackDamage() > sword.attackDamage());
         assertTrue(battleAxe.attackSpeed() < sword.attackSpeed());
     }
+
+    @Test
+    void partAffixesStackIntoDerivedAttackAndDurability() {
+        ToolBuildData plain = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
+        ToolBuildData affixed = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
+                List.of(), List.of(new PartStat(PartStat.Type.ATTACK, 10), new PartStat(PartStat.Type.ATTACK, 15),
+                        new PartStat(PartStat.Type.FRAGILE, 20)));
+
+        ToolStats base = ToolStatCalculator.calculate(ToolArchetype.SWORD, plain);
+        ToolStats modified = ToolStatCalculator.calculate(ToolArchetype.SWORD, affixed);
+        assertEquals(base.attackDamage() * 1.25f, modified.attackDamage());
+        assertEquals(Math.round(base.durability() * 0.80f), modified.durability());
+    }
+
+    @Test
+    void weaponAndMiningBonusesStayOnTheirArchetypes() {
+        List<PartStat> affixes = List.of(new PartStat(PartStat.Type.ATTACK, 25),
+                new PartStat(PartStat.Type.MINING_SPEED, 15));
+        ToolBuildData plain = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
+        ToolBuildData affixed = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
+                List.of(), affixes);
+
+        ToolStats plainSword = ToolStatCalculator.calculate(ToolArchetype.SWORD, plain);
+        ToolStats affixedSword = ToolStatCalculator.calculate(ToolArchetype.SWORD, affixed);
+        assertEquals(plainSword.attackDamage() * 1.25f, affixedSword.attackDamage());
+        assertEquals(plainSword.miningSpeed(), affixedSword.miningSpeed());
+
+        ToolStats plainPickaxe = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, plain);
+        ToolStats affixedPickaxe = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, affixed);
+        assertEquals(plainPickaxe.attackDamage(), affixedPickaxe.attackDamage());
+        assertEquals(plainPickaxe.miningSpeed() * 1.15f, affixedPickaxe.miningSpeed());
+    }
 }

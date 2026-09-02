@@ -3,8 +3,10 @@ package com.toolsmithsworkshop;
 import com.toolsmithsworkshop.item.ModularToolItem;
 import com.toolsmithsworkshop.registry.ModDataComponents;
 import com.toolsmithsworkshop.tool.ToolArchetype;
+import com.toolsmithsworkshop.tool.PartStat;
 import com.toolsmithsworkshop.tool.ToolMaterials;
 import com.toolsmithsworkshop.tool.ToolGems;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -12,38 +14,34 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.enchanting.GetEnchantmentLevelEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @EventBusSubscriber(modid = ToolsmithsWorkshop.MOD_ID)
 public final class ToolCombatEvents {
+    private static final long FRACTURE_ROLL_COOLDOWN_TICKS = 40;
+    private static final Map<UUID, FractureRoll> FRACTURE_ROLLS = new HashMap<>();
+
     private ToolCombatEvents() {}
 
     @SubscribeEvent
-    public static void applyCriticalTraits(CriticalHitEvent event) {
-        var stack = event.getEntity().getMainHandItem();
-        var build = stack.get(ModDataComponents.TOOL_BUILD);
-        if (!event.isVanillaCritical() || !(stack.getItem() instanceof ModularToolItem tool)
-                || tool.archetype() != ToolArchetype.SWORD || build == null) return;
-        if (build.grip().equals(ToolMaterials.BONE.id())) event.setDamageMultiplier(event.getDamageMultiplier() * 1.3f);
-        if (build.binding().equals(ToolMaterials.SLIME.id()) && event.getTarget() instanceof LivingEntity target) {
-            MobEffectInstance existing = target.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 10,
-                    Math.min(4, existing == null ? 0 : existing.getAmplifier() + 1)));
-        }
-    }
-
-    @SubscribeEvent
-    public static void applyEmeraldGemEnchantments(GetEnchantmentLevelEvent event) {
+    public static void applyToolEnchantments(GetEnchantmentLevelEvent event) {
         var build = event.getStack().get(ModDataComponents.TOOL_BUILD);
         if (!(event.getStack().getItem() instanceof ModularToolItem) || build == null) return;
         int level = ToolGems.count(build, ToolGems.EMERALD);
-        if (level == 0) return;
+        boolean prospecting = Boolean.TRUE.equals(event.getStack().get(ModDataComponents.PROSPECTING_ACTIVE));
+        if (level == 0 && !prospecting) return;
         event.getHolder(Enchantments.FORTUNE).ifPresent(fortune -> {
-            if (event.isTargetting(fortune)) event.getEnchantments().upgrade(fortune, event.getEnchantments().getLevel(fortune) + level);
+            if (event.isTargetting(fortune)) event.getEnchantments().upgrade(fortune,
+                    event.getEnchantments().getLevel(fortune) + level + (prospecting ? 1 : 0));
         });
         event.getHolder(Enchantments.LOOTING).ifPresent(looting -> {
             if (event.isTargetting(looting)) event.getEnchantments().upgrade(looting, event.getEnchantments().getLevel(looting) + level);
@@ -52,6 +50,14 @@ public final class ToolCombatEvents {
 
     @SubscribeEvent
     public static void teleportEnderPearlGemDrops(BlockDropsEvent event) {
+        event.getTool().remove(ModDataComponents.PROSPECTING_ACTIVE);
+        if (event.getBreaker() instanceof Player breaker) {
+            breaker.getMainHandItem().remove(ModDataComponents.PROSPECTING_ACTIVE);
+            FractureRoll roll = FRACTURE_ROLLS.get(breaker.getUUID());
+            if (roll != null && event.getPos().equals(roll.pos())) {
+                FRACTURE_ROLLS.put(breaker.getUUID(), new FractureRoll(roll.pos(), roll.nextRollTick(), false, true));
+            }
+        }
         if (!(event.getBreaker() instanceof Player player)) return;
         var build = event.getTool().get(ModDataComponents.TOOL_BUILD);
         if (!(event.getTool().getItem() instanceof ModularToolItem) || build == null
@@ -76,12 +82,86 @@ public final class ToolCombatEvents {
     }
 
     @SubscribeEvent
-    public static void applyCactusGripDamage(LivingDamageEvent.Pre event) {
-        if (event.getEntity().level().isClientSide || !(event.getSource().getEntity() instanceof Player player)) return;
+    public static void applyToolDamageModifiers(LivingDamageEvent.Pre event) {
+        if (event.getEntity().level().isClientSide) return;
+
+        if (event.getEntity() instanceof Player defender) {
+            var held = defender.getMainHandItem();
+            var defenseBuild = held.get(ModDataComponents.TOOL_BUILD);
+            if (held.getItem() instanceof ModularToolItem && defenseBuild != null) {
+                float reduction = Math.min(0.80f, defenseBuild.percent(PartStat.Type.DEFENSE) / 100.0f);
+                event.setNewDamage(event.getNewDamage() * (1.0f - reduction));
+            }
+        }
+
+        if (!(event.getSource().getEntity() instanceof Player player) || event.getSource().getDirectEntity() != player) return;
         var stack = player.getMainHandItem();
         var build = stack.get(ModDataComponents.TOOL_BUILD);
-        if (!(stack.getItem() instanceof ModularToolItem tool) || build == null || !build.grip().equals(ToolMaterials.CACTUS.id())
-                || (tool.archetype() != ToolArchetype.SWORD && tool.archetype() != ToolArchetype.BATTLE_AXE)) return;
-        if (player.getRandom().nextFloat() < 0.50f) event.setNewDamage(event.getNewDamage() * 2.0f);
+        if (!(stack.getItem() instanceof ModularToolItem tool) || build == null) return;
+
+        float damage = event.getNewDamage();
+        if (player.getRandom().nextFloat() < build.percent(PartStat.Type.FLIMSY) / 100.0f) damage *= 0.5f;
+
+        if (!tool.archetype().isWeapon()) {
+            event.setNewDamage(damage);
+            return;
+        }
+
+        boolean cactus = build.grip().equals(ToolMaterials.CACTUS.id());
+        float criticalRate = build.percent(PartStat.Type.CRIT_RATE) / 100.0f + (cactus ? 0.50f : 0.0f);
+        if (player.getRandom().nextFloat() < Math.min(1.0f, criticalRate)) {
+            float multiplier = 1.5f * (1.0f + build.percent(PartStat.Type.CRIT_DAMAGE) / 100.0f);
+            if (tool.archetype() == ToolArchetype.SWORD && build.grip().equals(ToolMaterials.BONE.id())) multiplier *= 1.3f;
+            if (cactus) multiplier *= 4.0f / 3.0f;
+            damage *= multiplier;
+            player.crit(event.getEntity());
+            if (tool.archetype() == ToolArchetype.SWORD && build.binding().equals(ToolMaterials.SLIME.id())) {
+                LivingEntity target = event.getEntity();
+                MobEffectInstance existing = target.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 10,
+                        Math.min(4, existing == null ? 0 : existing.getAmplifier() + 1)));
+            }
+        }
+        event.setNewDamage(damage);
     }
+
+    @SubscribeEvent
+    public static void rollProspecting(BlockEvent.BreakEvent event) {
+        if (event.getLevel().isClientSide() || event.isCanceled()) return;
+        var stack = event.getPlayer().getMainHandItem();
+        stack.remove(ModDataComponents.PROSPECTING_ACTIVE);
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!(stack.getItem() instanceof ModularToolItem tool) || tool.archetype().isWeapon() || build == null
+                || !tool.isCorrectToolForDrops(stack, event.getState())) return;
+        if (event.getPlayer().getRandom().nextFloat() < build.percent(PartStat.Type.PROSPECTING) / 100.0f) {
+            stack.set(ModDataComponents.PROSPECTING_ACTIVE, true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void applyFracture(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        if (player.level().isClientSide) return;
+        var stack = player.getMainHandItem();
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!(stack.getItem() instanceof ModularToolItem tool) || tool.archetype().isWeapon() || build == null
+                || event.getOriginalSpeed() <= 0 || !tool.isCorrectToolForDrops(stack, event.getState())) return;
+        BlockPos pos = event.getPosition().orElse(null);
+        if (pos == null) return;
+
+        long now = player.level().getGameTime();
+        FractureRoll previous = FRACTURE_ROLLS.get(player.getUUID());
+        if (previous != null && !previous.consumed() && pos.equals(previous.pos())) {
+            if (previous.fractured()) event.setNewSpeed(Float.MAX_VALUE);
+            return;
+        }
+        if (previous != null && now < previous.nextRollTick()) return;
+
+        boolean fractured = player.getRandom().nextFloat() < build.percent(PartStat.Type.FRACTURE) / 100.0f;
+        FRACTURE_ROLLS.put(player.getUUID(),
+                new FractureRoll(pos.immutable(), now + FRACTURE_ROLL_COOLDOWN_TICKS, fractured, false));
+        if (fractured) event.setNewSpeed(Float.MAX_VALUE);
+    }
+
+    private record FractureRoll(BlockPos pos, long nextRollTick, boolean fractured, boolean consumed) {}
 }

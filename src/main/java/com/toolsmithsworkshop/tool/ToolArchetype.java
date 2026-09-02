@@ -42,6 +42,7 @@ public enum ToolArchetype {
     public ComponentRole headRole() { return headRole; }
     public float baseAttackSpeed() { return baseAttackSpeed; }
     public float weightSensitivity() { return weightSensitivity; }
+    public boolean isWeapon() { return this == SWORD || this == BATTLE_AXE; }
 
     public ToolVisualTransform visualTransform(ComponentRole role) {
         return role == headRole ? headTransform : role == ComponentRole.BINDING ? bindingTransform : gripTransform;
