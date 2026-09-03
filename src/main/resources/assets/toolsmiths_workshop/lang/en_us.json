@@ -1,10 +1,20 @@
 {
+  "block.toolsmiths_workshop.firebricks": "Firebricks",
+  "item.toolsmiths_workshop.fire_brick_clay_ball": "Fire Brick Clay Ball",
+  "item.toolsmiths_workshop.fire_brick": "Fire Brick",
+  "item.toolsmiths_workshop.rose_gold_ingot": "Rose Gold Ingot",
+  "item.toolsmiths_workshop.steel_ingot": "Steel Ingot",
+  "item.toolsmiths_workshop.blaze_steel_ingot": "Blaze Steel Ingot",
+  "item.toolsmiths_workshop.sculkite_ingot": "Sculkite Ingot",
+  "item.toolsmiths_workshop.garnet": "Garnet",
+  "block.toolsmiths_workshop.garnet_ore": "Garnet Ore",
   "block.toolsmiths_workshop.basic_workshop": "Basic Workshop",
   "block.toolsmiths_workshop.tier_2_workshop": "Tier 2 Workshop",
   "block.toolsmiths_workshop.tier_3_workshop": "Tier 3 Workshop",
   "block.toolsmiths_workshop.tier_4_workshop": "Tier 4 Workshop",
   "block.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
   "block.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
+  "block.toolsmiths_workshop.crucible": "Crucible",
   "item.toolsmiths_workshop.pickaxe": "Modular Pickaxe",
   "item.toolsmiths_workshop.axe": "Modular Axe",
   "item.toolsmiths_workshop.battle_axe": "Modular Battle Axe",
@@ -12,5 +22,7 @@
   "container.toolsmiths_workshop.basic_workshop": "Basic Workshop",
   "container.toolsmiths_workshop.toolsmithing_workbench": "Toolsmithing Workbench",
   "container.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
+  "container.toolsmiths_workshop.crucible": "Crucible",
+  "jei.toolsmiths_workshop.crucible_smelting": "Crucible Smelting",
   "itemGroup.toolsmiths_workshop": "Toolsmith's Workshop"
 }

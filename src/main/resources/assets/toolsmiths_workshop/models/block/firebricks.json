@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "toolsmiths_workshop:block/fire_brick"
+  }
+}

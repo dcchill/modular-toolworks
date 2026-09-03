@@ -125,7 +125,7 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     private static ToolMaterial materialFor(ItemStack stack) {
         if (stack.is(ItemTags.PLANKS)) return ToolMaterials.WOOD;
         for (ToolMaterial material : ToolMaterials.values()) {
-            if (stack.is(material.repairItem())) return material;
+            if (stack.is(material.repairItem().get())) return material;
         }
         return null;
     }

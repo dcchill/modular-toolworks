@@ -20,6 +20,14 @@ import java.util.Map;
 
 public final class ModItems {
     public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(ToolsmithsWorkshop.MOD_ID);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> FIREBRICKS = REGISTER.registerSimpleBlockItem(ModBlocks.FIREBRICKS);
+    public static final DeferredItem<Item> FIRE_BRICK_CLAY_BALL = REGISTER.registerSimpleItem("fire_brick_clay_ball");
+    public static final DeferredItem<Item> FIRE_BRICK = REGISTER.registerSimpleItem("fire_brick");
+    public static final DeferredItem<Item> ROSE_GOLD_INGOT = REGISTER.registerSimpleItem("rose_gold_ingot");
+    public static final DeferredItem<Item> STEEL_INGOT = REGISTER.registerSimpleItem("steel_ingot");
+    public static final DeferredItem<Item> BLAZE_STEEL_INGOT = REGISTER.registerSimpleItem("blaze_steel_ingot");
+    public static final DeferredItem<Item> SCULKITE_INGOT = REGISTER.registerSimpleItem("sculkite_ingot");
+    public static final DeferredItem<Item> GARNET = REGISTER.registerSimpleItem("garnet");
     private static final Map<ComponentRole, Map<net.minecraft.resources.ResourceLocation, DeferredItem<ToolComponentItem>>> COMPONENTS = new EnumMap<>(ComponentRole.class);
     private static final Map<ToolArchetype, DeferredItem<ModularToolItem>> TOOLS = new EnumMap<>(ToolArchetype.class);
     private static final Map<ToolArchetype, Map<ComponentRole, DeferredItem<ToolVisualItem>>> VISUALS = new EnumMap<>(ToolArchetype.class);
@@ -28,6 +36,9 @@ public final class ModItems {
     private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> SCULK_BINDING_VISUALS = new EnumMap<>(ToolArchetype.class);
     private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> BONE_GRIP_VISUALS = new EnumMap<>(ToolArchetype.class);
     private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> CACTUS_GRIP_VISUALS = new EnumMap<>(ToolArchetype.class);
+    private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> BLAZE_STEEL_BINDING_VISUALS = new EnumMap<>(ToolArchetype.class);
+    private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> SCULKITE_BINDING_VISUALS = new EnumMap<>(ToolArchetype.class);
+    private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> SCULKITE_GRIP_VISUALS = new EnumMap<>(ToolArchetype.class);
     private static final Map<ToolArchetype, DeferredItem<ToolVisualItem>> GEM_VISUALS = new EnumMap<>(ToolArchetype.class);
 
     public static final DeferredItem<net.minecraft.world.item.BlockItem> BASIC_WORKSHOP = REGISTER.registerSimpleBlockItem(ModBlocks.BASIC_WORKSHOP);
@@ -36,6 +47,8 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> TIER_4_WORKSHOP = REGISTER.registerSimpleBlockItem(ModBlocks.TIER_4_WORKSHOP);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> TOOLSMITHING_WORKBENCH = REGISTER.registerSimpleBlockItem(ModBlocks.TOOLSMITHING_WORKBENCH);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> GEMSETTING_BENCH = REGISTER.registerSimpleBlockItem(ModBlocks.GEMSETTING_BENCH);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> CRUCIBLE = REGISTER.registerSimpleBlockItem(ModBlocks.CRUCIBLE);
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> GARNET_ORE = REGISTER.registerSimpleBlockItem(ModBlocks.GARNET_ORE);
     public static final DeferredItem<ModularToolItem> MODULAR_PICKAXE = registerTool(ToolArchetype.PICKAXE);
     public static final DeferredItem<ModularToolItem> MODULAR_AXE = registerTool(ToolArchetype.AXE);
     public static final DeferredItem<ModularToolItem> MODULAR_BATTLE_AXE = registerTool(ToolArchetype.BATTLE_AXE);
@@ -78,11 +91,17 @@ public final class ModItems {
                     () -> new ToolVisualItem(new Item.Properties())));
             CACTUS_GRIP_VISUALS.put(archetype, REGISTER.register(archetype.serializedName() + "_cactus_grip_visual",
                     () -> new ToolVisualItem(new Item.Properties())));
+            BLAZE_STEEL_BINDING_VISUALS.put(archetype,
+                    REGISTER.register(archetype.serializedName() + "_blaze_steel_binding_visual", () -> new ToolVisualItem(new Item.Properties())));
+            SCULKITE_BINDING_VISUALS.put(archetype,
+                    REGISTER.register(archetype.serializedName() + "_sculkite_binding_visual", () -> new ToolVisualItem(new Item.Properties())));
+            SCULKITE_GRIP_VISUALS.put(archetype,
+                    REGISTER.register(archetype.serializedName() + "_sculkite_grip_visual", () -> new ToolVisualItem(new Item.Properties())));
             GEM_VISUALS.put(archetype, REGISTER.register(archetype.serializedName() + "_gem_visual",
                     () -> new ToolVisualItem(new Item.Properties())));
         }
         for (ToolMaterial material : ToolMaterials.values()) {
-            if (material == ToolMaterials.WOOD || material == ToolMaterials.SLIME || material == ToolMaterials.PHANTOM || material == ToolMaterials.SCULK || material == ToolMaterials.BONE || material == ToolMaterials.CACTUS) continue;
+            if (material == ToolMaterials.WOOD || material == ToolMaterials.SLIME || material == ToolMaterials.PHANTOM || material == ToolMaterials.SCULK || material == ToolMaterials.BONE || material == ToolMaterials.CACTUS || material == ToolMaterials.BLAZE_STEEL) continue;
             FORGING_HAMMERS.put(material.id(), REGISTER.register(material.id().getPath() + "_forging_hammer",
                     () -> new ForgingHammerItem(material, new Item.Properties().durability(material.durability()))));
         }
@@ -119,6 +138,9 @@ public final class ModItems {
         if (role == ComponentRole.BINDING && material.equals(ToolMaterials.SCULK.id())) return SCULK_BINDING_VISUALS.get(archetype);
         if (role == ComponentRole.GRIP && material.equals(ToolMaterials.BONE.id())) return BONE_GRIP_VISUALS.get(archetype);
         if (role == ComponentRole.GRIP && material.equals(ToolMaterials.CACTUS.id())) return CACTUS_GRIP_VISUALS.get(archetype);
+        if (role == ComponentRole.BINDING && material.equals(ToolMaterials.BLAZE_STEEL.id())) return BLAZE_STEEL_BINDING_VISUALS.getOrDefault(archetype, visual(archetype, role));
+        if (role == ComponentRole.BINDING && material.equals(ToolMaterials.SCULKITE.id())) return SCULKITE_BINDING_VISUALS.get(archetype);
+        if (role == ComponentRole.GRIP && material.equals(ToolMaterials.SCULKITE.id())) return SCULKITE_GRIP_VISUALS.get(archetype);
         return visual(archetype, role);
     }
 

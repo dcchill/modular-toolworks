@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "toolsmiths_workshop:block/crucible_side",
+    "up": "toolsmiths_workshop:block/crucible_top_on_fixed",
+    "north": "toolsmiths_workshop:block/crucible_side",
+    "south": "toolsmiths_workshop:block/crucible_side",
+    "west": "toolsmiths_workshop:block/crucible_side",
+    "east": "toolsmiths_workshop:block/crucible_side",
+    "particle": "toolsmiths_workshop:block/crucible_side"
+  }
+}

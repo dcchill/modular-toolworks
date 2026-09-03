@@ -20,11 +20,21 @@ public final class ModCreativeTabs {
             .icon(() -> new ItemStack(ModBlocks.BASIC_WORKSHOP.get()))
             .displayItems((parameters, output) -> {
                 output.accept(ModBlocks.BASIC_WORKSHOP.get());
+                output.accept(ModBlocks.FIREBRICKS.get());
+                output.accept(ModItems.FIRE_BRICK_CLAY_BALL.get());
+                output.accept(ModItems.FIRE_BRICK.get());
+                output.accept(ModItems.ROSE_GOLD_INGOT.get());
+                output.accept(ModItems.STEEL_INGOT.get());
+                output.accept(ModItems.BLAZE_STEEL_INGOT.get());
+                output.accept(ModItems.SCULKITE_INGOT.get());
+                output.accept(ModItems.GARNET.get());
+                output.accept(ModBlocks.GARNET_ORE.get());
                 output.accept(ModBlocks.TIER_2_WORKSHOP.get());
                 output.accept(ModBlocks.TIER_3_WORKSHOP.get());
                 output.accept(ModBlocks.TIER_4_WORKSHOP.get());
                 output.accept(ModBlocks.TOOLSMITHING_WORKBENCH.get());
                 output.accept(ModBlocks.GEMSETTING_BENCH.get());
+                output.accept(ModBlocks.CRUCIBLE.get());
                 for (ComponentRole role : ComponentRole.values()) ModItems.components(role).forEach(output::accept);
                 ToolBuildData ironWood = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.IRON.id(), ToolMaterials.WOOD.id());
                 output.accept(ModularToolItem.create(ModItems.MODULAR_PICKAXE.get(), ironWood));

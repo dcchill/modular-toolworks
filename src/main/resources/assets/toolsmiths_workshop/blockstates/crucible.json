@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "toolsmiths_workshop:block/crucible" },
+    "lit=true": { "model": "toolsmiths_workshop:block/crucible_on" }
+  }
+}

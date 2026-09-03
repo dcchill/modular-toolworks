@@ -127,4 +127,48 @@ class ToolStatCalculatorTest {
         assertEquals(plainPickaxe.attackDamage(), affixedPickaxe.attackDamage());
         assertEquals(plainPickaxe.miningSpeed() * 1.15f, affixedPickaxe.miningSpeed());
     }
+
+    @Test
+    void weaponCriticalStatsUseArchetypeAndPositionWeightedMaterials() {
+        ToolBuildData build = new ToolBuildData(ToolMaterials.DIAMOND.id(), ToolMaterials.GOLD.id(), ToolMaterials.PHANTOM.id());
+
+        ToolStats sword = ToolStatCalculator.calculate(ToolArchetype.SWORD, build);
+        assertEquals(11.3f, sword.critRate(), 0.001f);
+        assertEquals(71.8f, sword.critDamage(), 0.001f);
+
+        ToolStats battleAxe = ToolStatCalculator.calculate(ToolArchetype.BATTLE_AXE, build);
+        assertEquals(9.3f, battleAxe.critRate(), 0.001f);
+        assertEquals(100.0f, battleAxe.critDamage(), 0.001f);
+
+        ToolStats pickaxe = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, build);
+        assertEquals(0.0f, pickaxe.critRate());
+        assertEquals(0.0f, pickaxe.critDamage());
+    }
+
+    @Test
+    void criticalAffixesAddAndFinalValuesAreCapped() {
+        ToolBuildData rateCapped = new ToolBuildData(ToolMaterials.GOLD.id(), ToolMaterials.GOLD.id(), ToolMaterials.GOLD.id(),
+                List.of(), List.of(new PartStat(PartStat.Type.CRIT_RATE, 15), new PartStat(PartStat.Type.CRIT_RATE, 15),
+                        new PartStat(PartStat.Type.CRIT_RATE, 15)));
+        ToolBuildData damageCapped = new ToolBuildData(ToolMaterials.GOLD.id(), ToolMaterials.GOLD.id(), ToolMaterials.GOLD.id(),
+                List.of(), List.of(new PartStat(PartStat.Type.CRIT_DAMAGE, 30), new PartStat(PartStat.Type.CRIT_DAMAGE, 30),
+                        new PartStat(PartStat.Type.CRIT_DAMAGE, 30)));
+
+        assertEquals(50.0f, ToolStatCalculator.calculate(ToolArchetype.SWORD, rateCapped).critRate());
+        assertEquals(100.0f, ToolStatCalculator.calculate(ToolArchetype.SWORD, damageCapped).critDamage());
+    }
+
+    @Test
+    void cactusAndBoneCriticalTraitsAreAdditive() {
+        ToolBuildData cactus = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.CACTUS.id());
+        ToolBuildData bone = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.BONE.id());
+
+        ToolStats cactusSword = ToolStatCalculator.calculate(ToolArchetype.SWORD, cactus);
+        assertEquals(14.8f, cactusSword.critRate(), 0.001f);
+        assertEquals(66.3f, cactusSword.critDamage(), 0.001f);
+
+        ToolStats boneSword = ToolStatCalculator.calculate(ToolArchetype.SWORD, bone);
+        assertEquals(7.3f, boneSword.critRate(), 0.001f);
+        assertEquals(83.7f, boneSword.critDamage(), 0.001f);
+    }
 }

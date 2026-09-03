@@ -165,7 +165,7 @@ public final class ModularToolItem extends Item {
             ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
             if (archetype == ToolArchetype.PICKAXE && isSticky(build)) addMomentum(stack, level.getGameTime());
             damage(stack, archetype == ToolArchetype.PICKAXE && isBrittle(build) && level.random.nextBoolean() ? 3 : 1, miner);
-            if (build != null && ToolGems.count(build, ToolGems.ECHO_SHARD) > 0 && miner instanceof ServerPlayer player
+            if (build != null && hasMaterial(build, ToolMaterials.SCULKITE.id()) && miner instanceof ServerPlayer player
                     && archetype != ToolArchetype.SWORD && archetype != ToolArchetype.BATTLE_AXE && isOre(state)) {
                 mineEchoVein(player, stack, state, pos);
             }
@@ -178,7 +178,8 @@ public final class ModularToolItem extends Item {
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
-        if (!attacker.level().isClientSide && build != null && ToolGems.count(build, ToolGems.ECHO_SHARD) > 0
+        if (build != null && hasMaterial(build, ToolMaterials.BLAZE_STEEL.id())) target.igniteForSeconds(4);
+        if (!attacker.level().isClientSide && build != null && hasMaterial(build, ToolMaterials.SCULKITE.id())
                 && attacker instanceof ServerPlayer player && (archetype == ToolArchetype.SWORD || archetype == ToolArchetype.BATTLE_AXE)) {
             float damage = ToolStatCalculator.calculate(archetype, build).attackDamage();
             for (Mob mob : attacker.level().getEntitiesOfClass(Mob.class, target.getBoundingBox().inflate(3),
@@ -310,7 +311,7 @@ public final class ModularToolItem extends Item {
     @Override
     public boolean isValidRepairItem(ItemStack stack, ItemStack ingredient) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
-        return build != null && ingredient.is(ToolMaterials.get(build.head()).repairItem());
+        return build != null && ingredient.is(ToolMaterials.get(build.head()).repairItem().get());
     }
 
     @Override
@@ -326,6 +327,8 @@ public final class ModularToolItem extends Item {
         tooltip.add(weapon ? stat("Damage", stats.attackDamage()) : stat("Mining Speed", stats.miningSpeed()));
         if (!weapon) tooltip.add(Component.literal("Mining Level: " + miningLevelName(stats.miningLevel())).withStyle(ChatFormatting.BLUE));
         if (weapon) tooltip.add(stat("Attack Speed", stats.attackSpeed()));
+        if (weapon) tooltip.add(percentStat("Critical Rate", stats.critRate()));
+        if (weapon) tooltip.add(percentStat("Critical Damage", stats.critDamage()));
         tooltip.add(Component.literal("Durability: " + (stack.getMaxDamage() - stack.getDamageValue()) + " / " + stack.getMaxDamage()).withStyle(ChatFormatting.BLUE));
         tooltip.add(stat("Weight", stats.weight()));
         for (PartStat.Type type : PartStat.Type.values()) {
@@ -335,15 +338,19 @@ public final class ModularToolItem extends Item {
         int diamonds = ToolGems.count(build, ToolGems.DIAMOND);
         int emeralds = ToolGems.count(build, ToolGems.EMERALD);
         int enderPearls = ToolGems.count(build, ToolGems.ENDER_PEARL);
-        int echoShards = ToolGems.count(build, ToolGems.ECHO_SHARD);
-        if (diamonds > 0) tooltip.add(Component.literal("Diamond Gems: +" + (diamonds * 25) + "% speed").withStyle(ChatFormatting.AQUA));
+        int garnets = ToolGems.count(build, ToolGems.GARNET);
+        float gemMultiplier = ToolGems.effectMultiplier(build);
+        if (diamonds > 0) tooltip.add(Component.literal("Diamond Gems: +" + String.format(Locale.ROOT, "%.2f", diamonds * 25 * gemMultiplier) + "% speed").withStyle(ChatFormatting.AQUA));
         if (emeralds > 0) tooltip.add(Component.literal("Emerald Gems: +" + emeralds + " Fortune / Looting").withStyle(ChatFormatting.GREEN));
         if (enderPearls > 0) tooltip.add(Component.literal("Ender Pearl Gems: drops teleport to you").withStyle(ChatFormatting.LIGHT_PURPLE));
-        if (echoShards > 0) tooltip.add(Component.literal(weapon ? "Echo Shard Gems: chains attacks to 2 hostile mobs" : "Echo Shard Gems: mines connected ore veins").withStyle(ChatFormatting.DARK_AQUA));
+        if (garnets > 0) tooltip.add(Component.literal(weapon ? "Garnet Gems: +" + (garnets * 10) + "% critical rate" : "Garnet Gems: +" + Math.round(garnets * 2.0f * gemMultiplier) + " bonus ore XP").withStyle(ChatFormatting.RED));
+        if (hasMaterial(build, ToolMaterials.SCULKITE.id())) tooltip.add(Component.literal(weapon ? "Sculkite: chains attacks to 2 hostile mobs" : "Sculkite: mines connected ore veins").withStyle(ChatFormatting.DARK_AQUA));
+        if (gemMultiplier > 1.0f && !build.modules().isEmpty()) tooltip.add(Component.literal("Adaptable: socketed gem effects +25%").withStyle(ChatFormatting.GOLD));
+        if (hasMaterial(build, ToolMaterials.BLAZE_STEEL.id())) tooltip.add(Component.literal("Overheated: hits ignite mobs; mined blocks autosmelt").withStyle(ChatFormatting.GOLD));
         if (build.binding().equals(ToolMaterials.SCULK.id())) tooltip.add(Component.literal("Sculk Binding: 4 durability repaired per XP").withStyle(ChatFormatting.DARK_AQUA));
-        if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: +50% custom critical rate; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
+        if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: +7% critical rate; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
         if (archetype == ToolArchetype.SWORD && build.grip().equals(ToolMaterials.BONE.id()))
-            tooltip.add(Component.literal("Bone Grip: custom criticals deal 30% more damage").withStyle(ChatFormatting.GREEN));
+            tooltip.add(Component.literal("Bone Grip: +15% critical damage").withStyle(ChatFormatting.GREEN));
         if (archetype == ToolArchetype.SWORD && build.binding().equals(ToolMaterials.SLIME.id()))
             tooltip.add(Component.literal("Slime Binding: custom criticals slow the target").withStyle(ChatFormatting.GREEN));
         tooltip.add(Component.literal("Traits: " + String.join(", ", ToolStatCalculator.activeTraits(build).values().stream().map(MaterialTrait::displayName).toList())).withStyle(ChatFormatting.GOLD));
@@ -360,6 +367,10 @@ public final class ModularToolItem extends Item {
 
     private static Component stat(String label, float value) {
         return Component.literal(label + ": " + String.format(Locale.ROOT, "%.2f", value)).withStyle(ChatFormatting.BLUE);
+    }
+
+    private static Component percentStat(String label, float value) {
+        return Component.literal(label + ": +" + String.format(Locale.ROOT, "%.1f", value) + "%").withStyle(ChatFormatting.BLUE);
     }
 
     private static Component partStat(PartStat.Type type, int percent) {

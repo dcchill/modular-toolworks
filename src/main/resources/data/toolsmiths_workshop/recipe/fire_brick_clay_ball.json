@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:clay" },
+    { "item": "minecraft:sand" },
+    { "item": "minecraft:sand" },
+    { "item": "minecraft:quartz" }
+  ],
+  "result": { "id": "toolsmiths_workshop:fire_brick_clay_ball", "count": 1 }
+}

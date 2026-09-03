@@ -95,7 +95,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
             graphics.drawString(font, font.plainSubstrByWidth(input.getHoverName().getString(), 92), infoX, topPos + 83,
                     0xFFFFFF, false);
             for (var candidate : ToolMaterials.values()) {
-                if (input.is(candidate.repairItem()) || input.is(net.minecraft.tags.ItemTags.PLANKS) && candidate == ToolMaterials.WOOD) {
+                if (input.is(candidate.repairItem().get()) || input.is(net.minecraft.tags.ItemTags.PLANKS) && candidate == ToolMaterials.WOOD) {
                     graphics.drawString(font, "Requires Tier " + candidate.workshopTier(), infoX, topPos + 95, 0xA0A0A0, false);
                     break;
                 }
