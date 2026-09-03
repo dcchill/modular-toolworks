@@ -31,6 +31,7 @@ public final class ToolMaterials {
     public static final ToolMaterial OBSIDIAN = add("obsidian", "Obsidian", 3, 1800, 7.5f, 3, 2.00f, 5.5f, -0.08f, 0, 40, Items.OBSIDIAN, "hardened");
     public static final ToolMaterial NETHERITE = add("netherite", "Netherite", 4, 2031, 9.0f, 4, 1.70f, 6.0f, 0.12f, 1, 36, Items.NETHERITE_INGOT, "hardened");
     public static final ToolMaterial SCULKITE = add("sculkite", "Sculkite", 4, 2400, 9.5f, 4, 1.60f, 6.5f, 0.15f, 2, 42, ModItems.SCULKITE_INGOT, "resonant");
+    public static final ToolMaterial SOUL_STEEL = add("soul_steel", "Soul Steel", 3, 1500, 6.0f, 3, 1.55f, 2.0f, 0.05f, 1, 20, ModItems.SOUL_STEEL_INGOT, "soul_surge");
 
     private ToolMaterials() {}
 

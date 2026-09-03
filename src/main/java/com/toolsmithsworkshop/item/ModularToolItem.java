@@ -347,6 +347,7 @@ public final class ModularToolItem extends Item {
         if (hasMaterial(build, ToolMaterials.SCULKITE.id())) tooltip.add(Component.literal(weapon ? "Sculkite: chains attacks to 2 hostile mobs" : "Sculkite: mines connected ore veins").withStyle(ChatFormatting.DARK_AQUA));
         if (gemMultiplier > 1.0f && !build.modules().isEmpty()) tooltip.add(Component.literal("Adaptable: socketed gem effects +25%").withStyle(ChatFormatting.GOLD));
         if (hasMaterial(build, ToolMaterials.BLAZE_STEEL.id())) tooltip.add(Component.literal("Overheated: hits ignite mobs; mined blocks autosmelt").withStyle(ChatFormatting.GOLD));
+        if (hasMaterial(build, ToolMaterials.SOUL_STEEL.id())) tooltip.add(Component.literal(weapon ? "Soul Surge: consecutive hits gain 1.25x power (max 9)" : "Soul Surge: 33% chance to gain 1.25x mining speed (max 5)").withStyle(ChatFormatting.DARK_AQUA));
         if (build.binding().equals(ToolMaterials.SCULK.id())) tooltip.add(Component.literal("Sculk Binding: 4 durability repaired per XP").withStyle(ChatFormatting.DARK_AQUA));
         if (build.grip().equals(ToolMaterials.CACTUS.id())) tooltip.add(Component.literal(weapon ? "Cactus Grip: +7% critical rate; 25% self-thorns" : "Cactus Grip: high mining speed; 25% self-thorns").withStyle(ChatFormatting.GREEN));
         if (archetype == ToolArchetype.SWORD && build.grip().equals(ToolMaterials.BONE.id()))

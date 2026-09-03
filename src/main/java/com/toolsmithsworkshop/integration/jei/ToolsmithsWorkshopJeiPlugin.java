@@ -25,7 +25,9 @@ public final class ToolsmithsWorkshopJeiPlugin implements IModPlugin {
                 new CrucibleJeiRecipe(new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.GOLD_INGOT), new ItemStack(ModItems.ROSE_GOLD_INGOT.get())),
                 new CrucibleJeiRecipe(new ItemStack(Items.IRON_INGOT), new ItemStack(Items.COAL_BLOCK), new ItemStack(ModItems.STEEL_INGOT.get())),
                 new CrucibleJeiRecipe(new ItemStack(ModItems.STEEL_INGOT.get()), new ItemStack(Items.BLAZE_POWDER), new ItemStack(ModItems.BLAZE_STEEL_INGOT.get())),
-                new CrucibleJeiRecipe(new ItemStack(Items.NETHERITE_INGOT), new ItemStack(Items.ECHO_SHARD), new ItemStack(ModItems.SCULKITE_INGOT.get()))));
+                new CrucibleJeiRecipe(new ItemStack(Items.NETHERITE_INGOT), new ItemStack(Items.ECHO_SHARD), new ItemStack(ModItems.SCULKITE_INGOT.get())),
+                new CrucibleJeiRecipe(new ItemStack(ModItems.STEEL_INGOT.get()), new ItemStack(Items.SOUL_SAND), new ItemStack(ModItems.SOUL_STEEL_INGOT.get())),
+                new CrucibleJeiRecipe(new ItemStack(ModItems.STEEL_INGOT.get()), new ItemStack(Items.SOUL_SOIL), new ItemStack(ModItems.SOUL_STEEL_INGOT.get()))));
     }
     @Override public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) { registration.addRecipeCatalysts(CrucibleJeiCategory.TYPE, ModBlocks.CRUCIBLE.get()); }
 }

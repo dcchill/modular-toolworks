@@ -4,6 +4,7 @@ import com.toolsmithsworkshop.ToolsmithsWorkshop;
 import com.toolsmithsworkshop.menu.BasicWorkshopMenu;
 import com.toolsmithsworkshop.menu.CrucibleMenu;
 import com.toolsmithsworkshop.menu.GemsettingMenu;
+import com.toolsmithsworkshop.menu.GuidebookMenu;
 import com.toolsmithsworkshop.menu.ToolsmithingMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -21,6 +22,8 @@ public final class ModMenus {
             "gemsetting", () -> new MenuType<>(GemsettingMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final DeferredHolder<MenuType<?>, MenuType<CrucibleMenu>> CRUCIBLE = REGISTER.register(
             "crucible", () -> new MenuType<>(CrucibleMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final DeferredHolder<MenuType<?>, MenuType<GuidebookMenu>> GUIDEBOOK = REGISTER.register(
+            "guidebook", () -> new MenuType<>(GuidebookMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     private ModMenus() {}
 }

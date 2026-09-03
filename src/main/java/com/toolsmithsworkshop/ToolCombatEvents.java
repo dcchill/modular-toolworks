@@ -10,6 +10,7 @@ import com.toolsmithsworkshop.tool.ToolGems;
 import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -19,6 +20,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -42,6 +44,8 @@ public final class ToolCombatEvents {
     private static final long FRACTURE_ROLL_COOLDOWN_TICKS = 40;
     private static final ResourceLocation TARGET_DUMMY = ResourceLocation.fromNamespaceAndPath("dummmmmmy", "target_dummy");
     private static final Map<UUID, FractureRoll> FRACTURE_ROLLS = new HashMap<>();
+    private static final Map<UUID, SoulSurge> WEAPON_SURGES = new HashMap<>();
+    private static final Map<UUID, SoulSurge> MINING_SURGES = new HashMap<>();
 
     private ToolCombatEvents() {}
 
@@ -136,6 +140,8 @@ public final class ToolCombatEvents {
         }
 
         var stats = ToolStatCalculator.calculate(tool.archetype(), build);
+        int soulStacks = hasMaterial(build, ToolMaterials.SOUL_STEEL.id()) ? soulStacks(WEAPON_SURGES, player) : 0;
+        damage *= (float) Math.pow(1.35, soulStacks);
         if (player.getRandom().nextFloat() < stats.critRate() / 100.0f) {
             float multiplier = 1.0f + stats.critDamage() / 100.0f;
             damage *= multiplier;
@@ -148,6 +154,8 @@ public final class ToolCombatEvents {
                         Math.min(4, existing == null ? 0 : existing.getAmplifier() + 1)));
             }
         }
+        if (hasMaterial(build, ToolMaterials.SOUL_STEEL.id())) advanceSoulSurge(WEAPON_SURGES, player, 9,
+                event.getEntity().getX(), event.getEntity().getY() + event.getEntity().getBbHeight() * 0.5, event.getEntity().getZ());
         event.setNewDamage(damage);
     }
 
@@ -218,6 +226,26 @@ public final class ToolCombatEvents {
         if (fractured) event.setNewSpeed(Float.MAX_VALUE);
     }
 
+    @SubscribeEvent
+    public static void applySoulSurgeMiningSpeed(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        var stack = player.getMainHandItem();
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (!(stack.getItem() instanceof ModularToolItem tool) || tool.archetype().isWeapon() || build == null
+                || !hasMaterial(build, ToolMaterials.SOUL_STEEL.id())) return;
+        event.setNewSpeed(event.getNewSpeed() * (float) Math.pow(1.25, soulStacks(MINING_SURGES, player)));
+    }
+
+    @SubscribeEvent
+    public static void advanceSoulSurgeMining(BlockEvent.BreakEvent event) {
+        if (event.getLevel().isClientSide() || event.isCanceled()) return;
+        var stack = event.getPlayer().getMainHandItem();
+        var build = stack.get(ModDataComponents.TOOL_BUILD);
+        if (stack.getItem() instanceof ModularToolItem tool && !tool.archetype().isWeapon() && build != null
+                && hasMaterial(build, ToolMaterials.SOUL_STEEL.id()) && event.getPlayer().getRandom().nextFloat() < 0.33f) advanceSoulSurge(MINING_SURGES, event.getPlayer(), 5,
+                event.getPos().getX() + 0.5, event.getPos().getY() + 0.5, event.getPos().getZ() + 0.5);
+    }
+
     private static boolean hasMaterial(com.toolsmithsworkshop.tool.ToolBuildData build, ResourceLocation material) {
         return build.head().equals(material) || build.binding().equals(material) || build.grip().equals(material);
     }
@@ -226,5 +254,19 @@ public final class ToolCombatEvents {
         return BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().contains("ore");
     }
 
+    private static int soulStacks(Map<UUID, SoulSurge> surges, Player player) {
+        SoulSurge surge = surges.get(player.getUUID());
+        return surge != null && player.level().getGameTime() - surge.lastProcTick() <= 40 ? surge.stacks() : 0;
+    }
+
+    private static void advanceSoulSurge(Map<UUID, SoulSurge> surges, Player player, int maxStacks, double x, double y, double z) {
+        int previousStacks = soulStacks(surges, player);
+        int stacks = Math.min(maxStacks, previousStacks + 1);
+        surges.put(player.getUUID(), new SoulSurge(player.level().getGameTime(), stacks));
+        if (player.level() instanceof ServerLevel level) level.sendParticles(ParticleTypes.SOUL, x, y, z,
+                stacks == maxStacks && previousStacks < maxStacks ? 40 : 8, 0.35, 0.45, 0.35, 0.03);
+    }
+
     private record FractureRoll(BlockPos pos, long nextRollTick, boolean fractured, boolean consumed) {}
+    private record SoulSurge(long lastProcTick, int stacks) {}
 }

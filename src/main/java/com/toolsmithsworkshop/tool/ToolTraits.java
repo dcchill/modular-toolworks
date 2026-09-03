@@ -25,6 +25,7 @@ public final class ToolTraits {
         add("spiky", "Spiky", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
         add("winged", "Winged", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
         add("resonant", "Resonant", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
+        add("soul_surge", "Soul Surge", 1.00f, 1.00f, 1.00f, 0.00f, 0, 1.00f);
     }
 
     private ToolTraits() {}

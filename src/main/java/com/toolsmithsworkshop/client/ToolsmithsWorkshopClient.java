@@ -23,6 +23,7 @@ public final class ToolsmithsWorkshopClient {
         event.register(ModMenus.TOOLSMITHING.get(), ToolsmithingScreen::new);
         event.register(ModMenus.GEMSETTING.get(), GemsettingScreen::new);
         event.register(ModMenus.CRUCIBLE.get(), CrucibleScreen::new);
+        event.register(ModMenus.GUIDEBOOK.get(), GuidebookScreen::new);
     }
 
     @SubscribeEvent
@@ -60,6 +61,7 @@ public final class ToolsmithsWorkshopClient {
             case "steel" -> 0xFF636363;
             case "blaze_steel" -> 0xFF682900;
             case "sculkite" -> 0xFF224958;
+            case "soul_steel" -> 0xFF5F4738;
             case "quartz" -> 0xFFC7B9A7;
             case "diamond" -> 0xFF55E8D1;
             case "emerald" -> 0xFF17C46B;

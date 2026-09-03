@@ -71,6 +71,7 @@ public final class CrucibleBlockEntity extends BlockEntity implements Container 
         if (matches(Items.IRON_INGOT, Items.COAL_BLOCK)) return new ItemStack(ModItems.STEEL_INGOT.get());
         if (matches(ModItems.STEEL_INGOT.get(), Items.BLAZE_POWDER)) return new ItemStack(ModItems.BLAZE_STEEL_INGOT.get());
         if (matches(Items.NETHERITE_INGOT, Items.ECHO_SHARD)) return new ItemStack(ModItems.SCULKITE_INGOT.get());
+        if (matches(ModItems.STEEL_INGOT.get(), Items.SOUL_SAND) || matches(ModItems.STEEL_INGOT.get(), Items.SOUL_SOIL)) return new ItemStack(ModItems.SOUL_STEEL_INGOT.get());
         return ItemStack.EMPTY;
     }
 

@@ -27,7 +27,9 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.STEEL_INGOT.get());
                 output.accept(ModItems.BLAZE_STEEL_INGOT.get());
                 output.accept(ModItems.SCULKITE_INGOT.get());
+                output.accept(ModItems.SOUL_STEEL_INGOT.get());
                 output.accept(ModItems.GARNET.get());
+                output.accept(ModItems.GUIDEBOOK.get());
                 output.accept(ModBlocks.GARNET_ORE.get());
                 output.accept(ModBlocks.TIER_2_WORKSHOP.get());
                 output.accept(ModBlocks.TIER_3_WORKSHOP.get());

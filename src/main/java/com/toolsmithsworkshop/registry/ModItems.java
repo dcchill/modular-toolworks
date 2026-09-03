@@ -4,6 +4,7 @@ import com.toolsmithsworkshop.ToolsmithsWorkshop;
 import com.toolsmithsworkshop.item.ModularToolItem;
 import com.toolsmithsworkshop.item.ToolComponentItem;
 import com.toolsmithsworkshop.item.ForgingHammerItem;
+import com.toolsmithsworkshop.item.GuidebookItem;
 import com.toolsmithsworkshop.item.ToolVisualItem;
 import com.toolsmithsworkshop.tool.ComponentRole;
 import com.toolsmithsworkshop.tool.ToolArchetype;
@@ -27,7 +28,9 @@ public final class ModItems {
     public static final DeferredItem<Item> STEEL_INGOT = REGISTER.registerSimpleItem("steel_ingot");
     public static final DeferredItem<Item> BLAZE_STEEL_INGOT = REGISTER.registerSimpleItem("blaze_steel_ingot");
     public static final DeferredItem<Item> SCULKITE_INGOT = REGISTER.registerSimpleItem("sculkite_ingot");
+    public static final DeferredItem<Item> SOUL_STEEL_INGOT = REGISTER.registerSimpleItem("soul_steel_ingot");
     public static final DeferredItem<Item> GARNET = REGISTER.registerSimpleItem("garnet");
+    public static final DeferredItem<GuidebookItem> GUIDEBOOK = REGISTER.register("guidebook", () -> new GuidebookItem(new Item.Properties().stacksTo(1)));
     private static final Map<ComponentRole, Map<net.minecraft.resources.ResourceLocation, DeferredItem<ToolComponentItem>>> COMPONENTS = new EnumMap<>(ComponentRole.class);
     private static final Map<ToolArchetype, DeferredItem<ModularToolItem>> TOOLS = new EnumMap<>(ToolArchetype.class);
     private static final Map<ToolArchetype, Map<ComponentRole, DeferredItem<ToolVisualItem>>> VISUALS = new EnumMap<>(ToolArchetype.class);
@@ -101,7 +104,7 @@ public final class ModItems {
                     () -> new ToolVisualItem(new Item.Properties())));
         }
         for (ToolMaterial material : ToolMaterials.values()) {
-            if (material == ToolMaterials.WOOD || material == ToolMaterials.SLIME || material == ToolMaterials.PHANTOM || material == ToolMaterials.SCULK || material == ToolMaterials.BONE || material == ToolMaterials.CACTUS || material == ToolMaterials.BLAZE_STEEL) continue;
+            if (material == ToolMaterials.WOOD || material == ToolMaterials.SLIME || material == ToolMaterials.PHANTOM || material == ToolMaterials.SCULK || material == ToolMaterials.BONE || material == ToolMaterials.CACTUS || material == ToolMaterials.BLAZE_STEEL || material == ToolMaterials.SCULKITE || material == ToolMaterials.SOUL_STEEL) continue;
             FORGING_HAMMERS.put(material.id(), REGISTER.register(material.id().getPath() + "_forging_hammer",
                     () -> new ForgingHammerItem(material, new Item.Properties().durability(material.durability()))));
         }
