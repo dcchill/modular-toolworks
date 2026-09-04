@@ -42,17 +42,31 @@ public final class ToolStatCalculator {
         float attackSpeed = archetype.baseAttackSpeed() + handling;
         float knockback = 0;
         if (normalizedWeight < 2.2f) {
-            miningSpeed *= 1.05f;
-            attackSpeed += 0.12f;
-            damage *= 0.95f;
+            if (archetype == ToolArchetype.MACE) {
+                float weightDeficit = 2.2f - normalizedWeight;
+                miningSpeed *= 1.0f + Math.min(0.15f, weightDeficit * 0.10f);
+                attackSpeed += Math.min(0.30f, weightDeficit * 0.20f);
+                damage *= Math.max(0.70f, 1.0f - weightDeficit * 0.30f);
+            } else {
+                miningSpeed *= 1.05f;
+                attackSpeed += 0.12f;
+                damage *= 0.95f;
+            }
         } else if (normalizedWeight > 3.6f) {
             miningSpeed *= 0.94f;
-            attackSpeed -= 0.16f;
-            damage *= 1.08f;
-            knockback = Math.min(0.75f, (normalizedWeight - 3.6f) * 0.22f);
+            attackSpeed -= archetype == ToolArchetype.MACE ? 0.22f : 0.16f;
+            // Heavy maces gain a much stronger impact bonus than other tools.
+            float heavyBonus = archetype == ToolArchetype.MACE
+                    ? 1.10f + Math.min(0.35f, (normalizedWeight - 3.6f) * 0.10f)
+                    : 1.08f + Math.min(0.17f, (normalizedWeight - 3.6f) * 0.05f);
+            damage *= heavyBonus;
+            knockback = archetype == ToolArchetype.MACE
+                    ? Math.min(1.0f, (normalizedWeight - 3.6f) * 0.30f)
+                    : Math.min(0.75f, (normalizedWeight - 3.6f) * 0.22f);
         }
         if (archetype == ToolArchetype.AXE) damage += 1.0f;
         if (archetype == ToolArchetype.BATTLE_AXE) damage += 4.0f;
+        if (archetype == ToolArchetype.MACE) damage += 3.0f;
         if (archetype == ToolArchetype.SWORD) damage += 2.0f;
         if (head == ToolMaterials.SOUL_STEEL) damage = soulSteelBaseDamage(archetype);
         float diamondSpeed = 1.0f + ToolGems.count(build, ToolGems.DIAMOND) * 0.25f * ToolGems.effectMultiplier(build);
@@ -105,7 +119,7 @@ public final class ToolStatCalculator {
 
     private static float defaultAttackDamage(ToolArchetype archetype, ToolMaterial head) {
         if (head == ToolMaterials.SOUL_STEEL) return soulSteelBaseDamage(archetype);
-        if (archetype == ToolArchetype.PICKAXE || archetype == ToolArchetype.SHOVEL) return head.attackDamage();
+        if (archetype == ToolArchetype.PICKAXE || archetype == ToolArchetype.HAMMER || archetype == ToolArchetype.SHOVEL) return head.attackDamage();
         if (archetype == ToolArchetype.SWORD) {
             return head == ToolMaterials.GOLD ? 4.0f : head.attackDamage() + 2.0f;
         }
@@ -122,6 +136,7 @@ public final class ToolStatCalculator {
 
     private static float defaultAttackSpeed(ToolArchetype archetype, ToolMaterial head) {
         if (archetype == ToolArchetype.PICKAXE) return 1.2f;
+        if (archetype == ToolArchetype.HAMMER) return 0.85f;
         if (archetype == ToolArchetype.SHOVEL || archetype == ToolArchetype.BATTLE_AXE) return 1.0f;
         if (archetype == ToolArchetype.SWORD) return 1.6f;
         if (head == ToolMaterials.WOOD || head == ToolMaterials.STONE) return 0.8f;

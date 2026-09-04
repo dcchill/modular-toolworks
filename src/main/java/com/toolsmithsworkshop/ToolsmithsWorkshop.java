@@ -4,6 +4,7 @@ import com.toolsmithsworkshop.registry.ModBlocks;
 import com.toolsmithsworkshop.registry.ModBlockEntities;
 import com.toolsmithsworkshop.registry.ModCreativeTabs;
 import com.toolsmithsworkshop.registry.ModDataComponents;
+import com.toolsmithsworkshop.registry.ModEnchantments;
 import com.toolsmithsworkshop.registry.ModItems;
 import com.toolsmithsworkshop.registry.ModMenus;
 import com.toolsmithsworkshop.registry.ModBlockEntities;
@@ -23,6 +24,7 @@ public final class ToolsmithsWorkshop {
         ModItems.REGISTER.register(modBus);
         ModMenus.REGISTER.register(modBus);
         ModCreativeTabs.REGISTER.register(modBus);
+        ModEnchantments.register(modBus);
         modBus.addListener(this::registerCapabilities);
     }
 

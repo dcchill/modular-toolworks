@@ -1,0 +1,7 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "front",
+  "textures": {
+    "layer0": "toolsmiths_workshop:item/mace_head"
+  }
+}

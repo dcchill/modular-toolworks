@@ -87,7 +87,7 @@ public final class GuidebookScreen extends AbstractContainerScreen<GuidebookMenu
             lines.add(Component.literal("Emerald: +1 Fortune and Looting per gem."));
             lines.add(Component.literal("Ender Pearl: mined drops teleport to you."));
             lines.add(Component.literal("Garnet: weapons gain +10% critical rate; mining tools gain bonus ore XP."));
-            lines.add(Component.literal("Sockets equal the head material's workshop tier. Steel's Adaptable trait improves socket effects by 25%.").withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Component.literal("Sockets equal the head material's workshop tier (1-4). Each gem type can be used once. Steel's Adaptable trait improves socket effects by 25%.").withStyle(ChatFormatting.DARK_GRAY));
         } else if (page == 0) {
             lines.add(Component.literal("Building Tools").withStyle(ChatFormatting.DARK_AQUA));
             lines.add(Component.literal("Head controls mining level, most mining speed, and most damage. Binding controls most durability and weight. Grip controls most handling and many special effects.").withStyle(ChatFormatting.DARK_GRAY));
@@ -136,8 +136,10 @@ public final class GuidebookScreen extends AbstractContainerScreen<GuidebookMenu
     private static String toolDescription(ToolArchetype archetype) {
         return switch (archetype) {
             case PICKAXE -> "mines stone and ores.";
+            case HAMMER -> "mines a 3x3 area of stone and ores, but is slower and heavier.";
             case AXE -> "cuts wood and serves as a heavy melee tool.";
             case BATTLE_AXE -> "slow, high-damage weapon with critical potential.";
+            case MACE -> "heavy weapon with weight-based damage scaling.";
             case SHOVEL -> "digs soil, sand, and gravel.";
             case SWORD -> "fast weapon with critical potential.";
         };

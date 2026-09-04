@@ -25,7 +25,7 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     public static final int FORGING_HAMMER = 1;
     public static final int RESULT = 2;
     public static final ComponentRole[] PARTS = {
-            ComponentRole.PICKAXE_HEAD, ComponentRole.AXE_HEAD, ComponentRole.SHOVEL_HEAD,
+            ComponentRole.PICKAXE_HEAD, ComponentRole.HAMMER_HEAD, ComponentRole.AXE_HEAD, ComponentRole.SHOVEL_HEAD,
             ComponentRole.SWORD_BLADE, ComponentRole.BATTLE_AXE_HEAD,
             ComponentRole.BINDING, ComponentRole.GRIP
     };
@@ -114,6 +114,7 @@ public final class BasicWorkshopMenu extends AbstractContainerMenu {
     }
 
     public static int requiredCount(ComponentRole role) {
+        if (role == ComponentRole.HAMMER_HEAD || role == ComponentRole.MACE_HEAD) return 4;
         if (role.isHead()) return 3;
         return role == ComponentRole.BINDING ? 2 : 1;
     }

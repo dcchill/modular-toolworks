@@ -10,16 +10,22 @@ import com.toolsmithsworkshop.tool.ToolGems;
 import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -32,10 +38,12 @@ import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,7 +54,6 @@ public final class ToolCombatEvents {
     private static final Map<UUID, FractureRoll> FRACTURE_ROLLS = new HashMap<>();
     private static final Map<UUID, SoulSurge> WEAPON_SURGES = new HashMap<>();
     private static final Map<UUID, SoulSurge> MINING_SURGES = new HashMap<>();
-
     private ToolCombatEvents() {}
 
     @SubscribeEvent
@@ -64,7 +71,7 @@ public final class ToolCombatEvents {
             if (event.isTargetting(looting)) event.getEnchantments().upgrade(looting, event.getEnchantments().getLevel(looting) + level);
         });
     }
-
+    
     @SubscribeEvent
     public static void teleportEnderPearlGemDrops(BlockDropsEvent event) {
         event.getTool().remove(ModDataComponents.PROSPECTING_ACTIVE);

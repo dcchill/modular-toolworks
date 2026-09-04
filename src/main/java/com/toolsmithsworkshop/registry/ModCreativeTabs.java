@@ -40,10 +40,12 @@ public final class ModCreativeTabs {
                 for (ComponentRole role : ComponentRole.values()) ModItems.components(role).forEach(output::accept);
                 ToolBuildData ironWood = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.IRON.id(), ToolMaterials.WOOD.id());
                 output.accept(ModularToolItem.create(ModItems.MODULAR_PICKAXE.get(), ironWood));
+                output.accept(ModularToolItem.create(ModItems.MODULAR_HAMMER.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_AXE.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_BATTLE_AXE.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_SHOVEL.get(), ironWood));
                 output.accept(ModularToolItem.create(ModItems.MODULAR_SWORD.get(), ironWood));
+                output.accept(ModularToolItem.create(ModItems.MODULAR_MACE.get(), ironWood));
                 for (ToolMaterial material : ToolMaterials.values()) {
                     var hammer = ModItems.forgingHammer(material.id());
                     if (hammer != null) output.accept(hammer.get());

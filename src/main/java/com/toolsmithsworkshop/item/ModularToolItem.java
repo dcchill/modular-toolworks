@@ -14,16 +14,21 @@ import com.toolsmithsworkshop.tool.ToolStatCalculator;
 import com.toolsmithsworkshop.tool.ToolStats;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
@@ -31,6 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
@@ -46,6 +52,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class ModularToolItem extends Item {
@@ -53,6 +60,7 @@ public final class ModularToolItem extends Item {
     private static final int MAX_MOMENTUM_STACKS = 16;
     private static final int MAX_ECHO_VEIN_BLOCKS = 32;
     private static final Set<UUID> ECHO_VEIN_MINERS = new HashSet<>();
+    private static final Set<UUID> HAMMER_MINERS = new HashSet<>();
     private static final ResourceLocation DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_damage");
     private static final ResourceLocation SPEED_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_speed");
     private static final ResourceLocation KNOCKBACK_ID = ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "tool_knockback");
@@ -69,6 +77,10 @@ public final class ModularToolItem extends Item {
 
     @Override
     public int getEnchantmentValue() {
+        // Mace has higher enchantability to support specialized mace enchantments
+        if (archetype == ToolArchetype.MACE) {
+            return 20;
+        }
         return 15;
     }
 
@@ -127,6 +139,7 @@ public final class ModularToolItem extends Item {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
         if (build == null || !canMine(state)) return 1.0f;
         float speed = ToolStatCalculator.calculate(archetype, build).miningSpeed();
+        if (archetype == ToolArchetype.HAMMER) speed *= 0.85f;
         if (!ToolStatCalculator.isVanillaEquivalent(build) && hasMaterial(build, ToolMaterials.STONE.id())
                 && state.is(BlockTags.MINEABLE_WITH_PICKAXE)) speed *= 1.05f;
         if (archetype == ToolArchetype.PICKAXE && isSticky(build)) speed *= momentumMultiplier(stack);
@@ -144,8 +157,8 @@ public final class ModularToolItem extends Item {
         return switch (archetype) {
             case AXE, BATTLE_AXE -> state.is(BlockTags.MINEABLE_WITH_AXE);
             case SHOVEL -> state.is(BlockTags.MINEABLE_WITH_SHOVEL);
-            case PICKAXE -> state.is(BlockTags.MINEABLE_WITH_PICKAXE);
-            case SWORD -> false;
+            case PICKAXE, HAMMER -> state.is(BlockTags.MINEABLE_WITH_PICKAXE);
+            case MACE, SWORD -> false;
         };
     }
 
@@ -169,6 +182,7 @@ public final class ModularToolItem extends Item {
                     && archetype != ToolArchetype.SWORD && archetype != ToolArchetype.BATTLE_AXE && isOre(state)) {
                 mineEchoVein(player, stack, state, pos);
             }
+            if (archetype == ToolArchetype.HAMMER && miner instanceof ServerPlayer player) mineHammerArea(player, stack, pos);
             applyCactusThorns(build, miner);
             addExhaustion(build, miner, 0.005f);
         }
@@ -179,6 +193,9 @@ public final class ModularToolItem extends Item {
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         ToolBuildData build = stack.get(ModDataComponents.TOOL_BUILD);
         if (build != null && hasMaterial(build, ToolMaterials.BLAZE_STEEL.id())) target.igniteForSeconds(4);
+        if (archetype == ToolArchetype.MACE && attacker instanceof ServerPlayer player && canSmashAttack(player)) {
+            doSmashAttack(player, target);
+        }
         if (!attacker.level().isClientSide && build != null && hasMaterial(build, ToolMaterials.SCULKITE.id())
                 && attacker instanceof ServerPlayer player && (archetype == ToolArchetype.SWORD || archetype == ToolArchetype.BATTLE_AXE)) {
             float damage = ToolStatCalculator.calculate(archetype, build).attackDamage();
@@ -192,6 +209,64 @@ public final class ModularToolItem extends Item {
         applyCactusThorns(build, attacker);
         addExhaustion(build, attacker, 0.1f);
         return true;
+    }
+
+    @Override
+    public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        damage(stack, 1, attacker);
+        if (archetype == ToolArchetype.MACE && canSmashAttack(attacker)) {
+            attacker.resetFallDistance();
+        }
+    }
+
+    @Override
+    public float getAttackDamageBonus(Entity target, float damage, net.minecraft.world.damagesource.DamageSource damageSource) {
+        if (archetype != ToolArchetype.MACE || !(damageSource.getDirectEntity() instanceof LivingEntity attacker)
+                || !canSmashAttack(attacker)) return 0.0f;
+
+        float fallDistance = attacker.fallDistance;
+        float smashDamage = fallDistance <= 3.0f ? 4.0f * fallDistance
+                : fallDistance <= 8.0f ? 12.0f + 2.0f * (fallDistance - 3.0f)
+                : 22.0f + fallDistance - 8.0f;
+        if (attacker.level() instanceof ServerLevel level) {
+            smashDamage += EnchantmentHelper.modifyFallBasedDamage(
+                    level, attacker.getWeaponItem(), target, damageSource, 0.0f) * fallDistance;
+        }
+        return smashDamage;
+    }
+
+    private static boolean canSmashAttack(LivingEntity attacker) {
+        return attacker.fallDistance > 1.5F && !attacker.isFallFlying();
+    }
+
+    private static void doSmashAttack(ServerPlayer attacker, LivingEntity target) {
+        ServerLevel level = attacker.serverLevel();
+        if (target.onGround()) {
+            level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+                    attacker.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND,
+                    attacker.getSoundSource(), 1.0F, 1.0F);
+        } else {
+            level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+                    SoundEvents.MACE_SMASH_AIR, attacker.getSoundSource(), 1.0F, 1.0F);
+        }
+
+        level.levelEvent(2013, target.getOnPos(), 750);
+        level.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(3.5D),
+                smashKnockbackPredicate(attacker, target)).forEach(nearby -> {
+                    Vec3 offset = nearby.position().subtract(target.position());
+                    double power = (3.5D - offset.length()) * 0.7D
+                            * (attacker.fallDistance > 5.0F ? 2.0D : 1.0D)
+                            * (1.0D - nearby.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
+                    if (power <= 0.0D) return;
+                    Vec3 push = offset.normalize().scale(power);
+                    nearby.push(push.x, 0.7D, push.z);
+                    if (nearby instanceof ServerPlayer player) player.connection.send(new ClientboundSetEntityMotionPacket(player));
+                });
+    }
+
+    private static Predicate<LivingEntity> smashKnockbackPredicate(Player attacker, Entity target) {
+        return entity -> entity.isAlive() && !entity.isSpectator() && entity != attacker && entity != target
+                && !attacker.isAlliedTo(entity);
     }
 
     private void mineEchoVein(ServerPlayer player, ItemStack stack, BlockState origin, BlockPos pos) {
@@ -219,6 +294,25 @@ public final class ModularToolItem extends Item {
             }
         } finally {
             ECHO_VEIN_MINERS.remove(player.getUUID());
+        }
+    }
+
+    private void mineHammerArea(ServerPlayer player, ItemStack stack, BlockPos pos) {
+        if (!player.isCrouching()) return;
+        if (!HAMMER_MINERS.add(player.getUUID())) return;
+        try {
+            Direction face = Direction.getNearest(player.getLookAngle().x, player.getLookAngle().y, player.getLookAngle().z);
+            for (int first = -1; first <= 1; first++) for (int second = -1; second <= 1; second++) {
+                if (first == 0 && second == 0) continue;
+                BlockPos target = switch (face.getAxis()) {
+                    case X -> pos.offset(0, first, second);
+                    case Y -> pos.offset(first, 0, second);
+                    case Z -> pos.offset(first, second, 0);
+                };
+                if (isCorrectToolForDrops(stack, player.level().getBlockState(target))) player.gameMode.destroyBlock(target);
+            }
+        } finally {
+            HAMMER_MINERS.remove(player.getUUID());
         }
     }
 
@@ -300,9 +394,10 @@ public final class ModularToolItem extends Item {
     @Override
     public boolean canPerformAction(ItemStack stack, ItemAbility ability) {
         return switch (archetype) {
-            case PICKAXE -> ability == ItemAbilities.PICKAXE_DIG;
+            case PICKAXE, HAMMER -> ability == ItemAbilities.PICKAXE_DIG;
             case AXE, BATTLE_AXE -> ability == ItemAbilities.AXE_DIG || ability == ItemAbilities.AXE_STRIP ||
                     ability == ItemAbilities.AXE_SCRAPE || ability == ItemAbilities.AXE_WAX_OFF;
+            case MACE -> false;
             case SHOVEL -> ability == ItemAbilities.SHOVEL_DIG;
             case SWORD -> ability == ItemAbilities.SWORD_DIG || ability == ItemAbilities.SWORD_SWEEP;
         };
@@ -323,8 +418,10 @@ public final class ModularToolItem extends Item {
         tooltip.add(Component.literal(ToolMaterials.get(build.binding()).displayName() + " Tool Binding").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(ToolMaterials.get(build.grip()).displayName() + " Tool Grip").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.empty());
-        boolean weapon = archetype == ToolArchetype.SWORD || archetype == ToolArchetype.BATTLE_AXE;
+        boolean weapon = archetype == ToolArchetype.SWORD || archetype == ToolArchetype.BATTLE_AXE
+            || archetype == ToolArchetype.MACE;
         tooltip.add(weapon ? stat("Damage", stats.attackDamage()) : stat("Mining Speed", stats.miningSpeed()));
+        if (archetype == ToolArchetype.HAMMER) tooltip.add(Component.literal("Mines a 3x3 area").withStyle(ChatFormatting.BLUE));
         if (!weapon) tooltip.add(Component.literal("Mining Level: " + miningLevelName(stats.miningLevel())).withStyle(ChatFormatting.BLUE));
         if (weapon) tooltip.add(stat("Attack Speed", stats.attackSpeed()));
         if (weapon) tooltip.add(percentStat("Critical Rate", stats.critRate()));

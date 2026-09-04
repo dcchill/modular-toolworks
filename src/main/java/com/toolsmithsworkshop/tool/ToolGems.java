@@ -36,4 +36,8 @@ public final class ToolGems {
     public static int socketCount(ToolBuildData build) {
         return ToolMaterials.get(build.head()).workshopTier();
     }
+
+    public static boolean canSocket(ToolBuildData build, ItemStack gem) {
+        return isGem(gem) && build.modules().size() < socketCount(build) && !build.modules().contains(id(gem));
+    }
 }

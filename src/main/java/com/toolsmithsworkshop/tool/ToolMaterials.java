@@ -8,10 +8,9 @@ import net.minecraft.world.item.Items;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** One table is the only place a built-in material's base numbers are defined. */
 public final class ToolMaterials {
     private static final Map<ResourceLocation, ToolMaterial> MATERIALS = new LinkedHashMap<>();
-
+    //name, displayName, workshopTier, durability, speed, level, weight, damage, handling, critRate, critDamage, repairItem, trait
     public static final ToolMaterial WOOD = add("wood", "Wood", 1, 59, 2.0f, 0, 0.65f, 2.0f, 0.15f, 2, 10, Items.OAK_PLANKS, "familiar");
     public static final ToolMaterial STONE = add("stone", "Stone", 1, 131, 4.0f, 1, 1.25f, 3.0f, -0.05f, 0, 24, Items.COBBLESTONE, "crude");
     public static final ToolMaterial FLINT = add("flint", "Flint", 1, 160, 5.2f, 1, 0.85f, 3.5f, 0.08f, 3, 24, Items.FLINT, "crude");

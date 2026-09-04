@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 class ToolStatCalculatorTest {
     @Test
@@ -75,6 +77,16 @@ class ToolStatCalculatorTest {
     }
 
     @Test
+    void hammerIsSlowerAndMoreWeightSensitiveThanPickaxe() {
+        ToolBuildData build = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.IRON.id(), ToolMaterials.WOOD.id());
+        ToolStats pickaxe = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, build);
+        ToolStats hammer = ToolStatCalculator.calculate(ToolArchetype.HAMMER, build);
+
+        assertTrue(hammer.attackSpeed() < pickaxe.attackSpeed());
+        assertTrue(hammer.attackDamage() > pickaxe.attackDamage());
+    }
+
+    @Test
     void diamondGemsIncreaseMiningAndAttackSpeed() {
         ToolBuildData plain = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
         ToolBuildData socketed = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
@@ -84,6 +96,21 @@ class ToolStatCalculatorTest {
         ToolStats gemmed = ToolStatCalculator.calculate(ToolArchetype.PICKAXE, socketed);
         assertEquals(base.miningSpeed() * 1.25f, gemmed.miningSpeed());
         assertEquals(base.attackSpeed() * 1.25f, gemmed.attackSpeed());
+    }
+
+    @Test
+    void gemSocketsAreTierLimitedAndUnique() {
+        ToolBuildData tierOne = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id());
+        assertTrue(ToolGems.canSocket(tierOne, new ItemStack(Items.DIAMOND)));
+
+        ToolBuildData diamondSocketed = new ToolBuildData(ToolMaterials.IRON.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
+                List.of(ToolGems.DIAMOND));
+        assertTrue(!ToolGems.canSocket(diamondSocketed, new ItemStack(Items.DIAMOND)));
+        assertTrue(!ToolGems.canSocket(diamondSocketed, new ItemStack(Items.EMERALD)));
+
+        ToolBuildData tierTwo = new ToolBuildData(ToolMaterials.DIAMOND.id(), ToolMaterials.WOOD.id(), ToolMaterials.WOOD.id(),
+                List.of(ToolGems.DIAMOND));
+        assertTrue(ToolGems.canSocket(tierTwo, new ItemStack(Items.EMERALD)));
     }
 
     @Test

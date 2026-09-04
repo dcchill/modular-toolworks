@@ -13,6 +13,8 @@ class BasicWorkshopMenuTest {
     @Test
     void partCostsAndStickGripAreIntentional() {
         assertEquals(3, BasicWorkshopMenu.requiredCount(ComponentRole.PICKAXE_HEAD));
+        assertEquals(4, BasicWorkshopMenu.requiredCount(ComponentRole.HAMMER_HEAD));
+        assertEquals(4, BasicWorkshopMenu.requiredCount(ComponentRole.MACE_HEAD));
         assertEquals(3, BasicWorkshopMenu.requiredCount(ComponentRole.SWORD_BLADE));
         assertEquals("Sword Blade", ComponentRole.SWORD_BLADE.displayName());
         assertEquals(2, BasicWorkshopMenu.requiredCount(ComponentRole.BINDING));

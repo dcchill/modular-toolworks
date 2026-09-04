@@ -5,6 +5,8 @@ import com.mojang.serialization.Codec;
 public enum ToolArchetype {
     PICKAXE("pickaxe", "Pickaxe", ComponentRole.PICKAXE_HEAD, 1.20f, 1.0f, 0.0f, 0.0f,
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
+    HAMMER("hammer", "Hammer", ComponentRole.HAMMER_HEAD, 0.85f, 1.35f, 0.0f, 0.0f,
+            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     AXE("axe", "Axe", ComponentRole.AXE_HEAD, 1.00f, 1.0f, 0.0f, 0.0f,
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     BATTLE_AXE("battle_axe", "Battle Axe", ComponentRole.BATTLE_AXE_HEAD, 1.00f, 1.0f, 3.0f, 80.0f,
@@ -12,7 +14,9 @@ public enum ToolArchetype {
     SHOVEL("shovel", "Shovel", ComponentRole.SHOVEL_HEAD, 1.00f, 1.0f, 0.0f, 0.0f,
             ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.DEFAULT),
     SWORD("sword", "Sword", ComponentRole.SWORD_BLADE, 1.60f, 1.0f, 5.0f, 50.0f,
-            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.SWORD_GRIP);
+            ToolVisualTransform.HEAD, ToolVisualTransform.BINDING, ToolVisualTransform.SWORD_GRIP),
+    MACE("mace", "Mace", ComponentRole.MACE_HEAD, 0.90f, 1.35f, 2.0f, 60.0f,
+            ToolVisualTransform.HEAD, ToolVisualTransform.MACE_BINDING, ToolVisualTransform.MACE_GRIP);
 
     public static final Codec<ToolArchetype> CODEC = Codec.STRING.xmap(ToolArchetype::byName, ToolArchetype::serializedName);
 
@@ -49,7 +53,7 @@ public enum ToolArchetype {
     public float weightSensitivity() { return weightSensitivity; }
     public float baseCritRate() { return baseCritRate; }
     public float baseCritDamage() { return baseCritDamage; }
-    public boolean isWeapon() { return this == SWORD || this == BATTLE_AXE; }
+    public boolean isWeapon() { return this == SWORD || this == BATTLE_AXE || this == MACE; }
 
     public ToolVisualTransform visualTransform(ComponentRole role) {
         return role == headRole ? headTransform : role == ComponentRole.BINDING ? bindingTransform : gripTransform;

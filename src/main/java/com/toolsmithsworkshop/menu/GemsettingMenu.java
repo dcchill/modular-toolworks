@@ -59,8 +59,7 @@ public final class GemsettingMenu extends AbstractContainerMenu {
     private ItemStack makeResult() {
         ItemStack tool = input.getItem(TOOL);
         ToolBuildData build = tool.get(ModDataComponents.TOOL_BUILD);
-        if (!(tool.getItem() instanceof ModularToolItem item) || build == null || !ToolGems.isGem(input.getItem(GEM))
-                || build.modules().size() >= ToolGems.socketCount(build)) return ItemStack.EMPTY;
+        if (!(tool.getItem() instanceof ModularToolItem item) || build == null || !ToolGems.canSocket(build, input.getItem(GEM))) return ItemStack.EMPTY;
         var modules = new ArrayList<>(build.modules());
         modules.add(ToolGems.id(input.getItem(GEM)));
         ItemStack socketed = tool.copy();

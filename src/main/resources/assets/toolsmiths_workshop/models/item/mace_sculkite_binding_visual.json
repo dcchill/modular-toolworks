@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "toolsmiths_workshop:item/sculkite_shovel_binding"
+  }
+}

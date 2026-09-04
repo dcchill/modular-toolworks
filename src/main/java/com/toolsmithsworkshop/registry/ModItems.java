@@ -53,10 +53,12 @@ public final class ModItems {
     public static final DeferredItem<net.minecraft.world.item.BlockItem> CRUCIBLE = REGISTER.registerSimpleBlockItem(ModBlocks.CRUCIBLE);
     public static final DeferredItem<net.minecraft.world.item.BlockItem> GARNET_ORE = REGISTER.registerSimpleBlockItem(ModBlocks.GARNET_ORE);
     public static final DeferredItem<ModularToolItem> MODULAR_PICKAXE = registerTool(ToolArchetype.PICKAXE);
+    public static final DeferredItem<ModularToolItem> MODULAR_HAMMER = registerTool(ToolArchetype.HAMMER);
     public static final DeferredItem<ModularToolItem> MODULAR_AXE = registerTool(ToolArchetype.AXE);
     public static final DeferredItem<ModularToolItem> MODULAR_BATTLE_AXE = registerTool(ToolArchetype.BATTLE_AXE);
     public static final DeferredItem<ModularToolItem> MODULAR_SHOVEL = registerTool(ToolArchetype.SHOVEL);
     public static final DeferredItem<ModularToolItem> MODULAR_SWORD = registerTool(ToolArchetype.SWORD);
+    public static final DeferredItem<ModularToolItem> MODULAR_MACE = registerTool(ToolArchetype.MACE);
     public static final DeferredItem<ToolComponentItem> WOODEN_GRIP = REGISTER.register("wooden_grip", () -> new ToolComponentItem(new Item.Properties()
             .component(ModDataComponents.TOOL_COMPONENT.value(), new ToolComponentData(ComponentRole.GRIP, ToolMaterials.WOOD.id()))));
     private static final Map<net.minecraft.resources.ResourceLocation, DeferredItem<ForgingHammerItem>> FORGING_HAMMERS = new LinkedHashMap<>();

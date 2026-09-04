@@ -25,7 +25,7 @@ public final class BasicWorkshopScreen extends AbstractContainerScreen<BasicWork
             ResourceLocation.fromNamespaceAndPath(ToolsmithsWorkshop.MOD_ID, "textures/gui/tier_4_workbench_gui.png")
     };
     private static final ItemStack[] PART_ICONS = {
-            icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.SHOVEL_HEAD),
+            icon(ComponentRole.PICKAXE_HEAD), icon(ComponentRole.HAMMER_HEAD), icon(ComponentRole.AXE_HEAD), icon(ComponentRole.SHOVEL_HEAD),
             icon(ComponentRole.SWORD_BLADE), icon(ComponentRole.BATTLE_AXE_HEAD),
             icon(ComponentRole.BINDING), icon(ComponentRole.GRIP)
     };

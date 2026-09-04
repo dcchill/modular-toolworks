@@ -18,6 +18,7 @@
   "block.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
   "block.toolsmiths_workshop.crucible": "Crucible",
   "item.toolsmiths_workshop.pickaxe": "Modular Pickaxe",
+  "item.toolsmiths_workshop.hammer": "Modular Hammer",
   "item.toolsmiths_workshop.axe": "Modular Axe",
   "item.toolsmiths_workshop.battle_axe": "Modular Battle Axe",
   "item.toolsmiths_workshop.sword": "Modular Sword",
@@ -26,5 +27,6 @@
   "container.toolsmiths_workshop.gemsetting_bench": "Gemsetting Bench",
   "container.toolsmiths_workshop.crucible": "Crucible",
   "jei.toolsmiths_workshop.crucible_smelting": "Crucible Smelting",
+  "jei.toolsmiths_workshop.crucible_recycling": "Crucible Recycling",
   "itemGroup.toolsmiths_workshop": "Toolsmith's Workshop"
 }

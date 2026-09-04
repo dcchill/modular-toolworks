@@ -3,6 +3,10 @@ package com.toolsmithsworkshop.block.entity;
 import com.toolsmithsworkshop.registry.ModBlockEntities;
 import com.toolsmithsworkshop.block.CrucibleBlock;
 import com.toolsmithsworkshop.registry.ModItems;
+import com.toolsmithsworkshop.registry.ModDataComponents;
+import com.toolsmithsworkshop.tool.ComponentRole;
+import com.toolsmithsworkshop.tool.ToolComponentData;
+import com.toolsmithsworkshop.tool.ToolMaterials;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -61,11 +65,25 @@ public final class CrucibleBlockEntity extends BlockEntity implements Container 
 
     private boolean canSmelt() {
         ItemStack result = smeltingResult();
-        ItemStack output = items.get(3);
-        return !result.isEmpty() && (output.isEmpty() || ItemStack.isSameItemSameComponents(output, result) && output.getCount() < output.getMaxStackSize());
+        if (!result.isEmpty()) {
+            ItemStack output = items.get(3);
+            return output.isEmpty() || ItemStack.isSameItemSameComponents(output, result) && output.getCount() < output.getMaxStackSize();
+        }
+        return false;
     }
 
     private ItemStack smeltingResult() {
+        // Check for component recycling (slot 0 has a tool component, slot 1 is empty)
+        if (items.get(1).isEmpty() && !items.get(0).isEmpty()) {
+            ItemStack component = items.get(0);
+            ToolComponentData data = component.getItem() instanceof com.toolsmithsworkshop.item.ToolComponentItem
+                    ? component.get(ModDataComponents.TOOL_COMPONENT) : null;
+            if (data != null) {
+                var material = ToolMaterials.get(data.material());
+                return new ItemStack(material.repairItem().get(), 1);
+            }
+        }
+        // Original alloy smelting recipes
         if (matches(Items.GOLD_INGOT, Items.NETHERITE_SCRAP)) return new ItemStack(Items.NETHERITE_INGOT);
         if (matches(Items.COPPER_INGOT, Items.GOLD_INGOT)) return new ItemStack(ModItems.ROSE_GOLD_INGOT.get());
         if (matches(Items.IRON_INGOT, Items.COAL_BLOCK)) return new ItemStack(ModItems.STEEL_INGOT.get());
