@@ -2,6 +2,7 @@ package com.toolsmithsworkshop.menu;
 
 import com.toolsmithsworkshop.item.ModularToolItem;
 import com.toolsmithsworkshop.item.ForgingHammerItem;
+import com.toolsmithsworkshop.block.entity.ToolsmithingWorkbenchBlockEntity;
 import com.toolsmithsworkshop.registry.ModBlocks;
 import com.toolsmithsworkshop.registry.ModDataComponents;
 import com.toolsmithsworkshop.registry.ModItems;
@@ -34,13 +35,7 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     public static final int REPAIR = 4;
     public static final int RESULT = 5;
 
-    private final Container input = new SimpleContainer(5) {
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            ToolsmithingMenu.this.slotsChanged(this);
-        }
-    };
+    private final Container input;
     private final ResultContainer result = new ResultContainer();
     private final ContainerLevelAccess access;
 
@@ -49,7 +44,16 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
     }
 
     public ToolsmithingMenu(int id, Inventory inventory, ContainerLevelAccess access) {
+        this(id, inventory, new SimpleContainer(5), access);
+    }
+
+    public ToolsmithingMenu(int id, Inventory inventory, ToolsmithingWorkbenchBlockEntity workbench) {
+        this(id, inventory, workbench, ContainerLevelAccess.create(workbench.getLevel(), workbench.getBlockPos()));
+    }
+
+    private ToolsmithingMenu(int id, Inventory inventory, Container input, ContainerLevelAccess access) {
         super(ModMenus.TOOLSMITHING.get(), id);
+        this.input = input;
         this.access = access;
         addSlot(componentSlot(input, HEAD, 44, 10, true));
         addSlot(componentSlot(input, BINDING, 44, 30, false));
@@ -211,9 +215,4 @@ public final class ToolsmithingMenu extends AbstractContainerMenu {
         return stillValid(access, player, ModBlocks.TOOLSMITHING_WORKBENCH.get());
     }
 
-    @Override
-    public void removed(Player player) {
-        super.removed(player);
-        clearContainer(player, input);
-    }
 }

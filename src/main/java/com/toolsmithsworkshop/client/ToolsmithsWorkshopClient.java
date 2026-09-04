@@ -12,6 +12,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import com.toolsmithsworkshop.registry.ModBlockEntities;
 
 @EventBusSubscriber(modid = ToolsmithsWorkshop.MOD_ID, value = Dist.CLIENT)
 public final class ToolsmithsWorkshopClient {
@@ -24,6 +26,12 @@ public final class ToolsmithsWorkshopClient {
         event.register(ModMenus.GEMSETTING.get(), GemsettingScreen::new);
         event.register(ModMenus.CRUCIBLE.get(), CrucibleScreen::new);
         event.register(ModMenus.GUIDEBOOK.get(), GuidebookScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.TOOLSMITHING_WORKBENCH.get(),
+                ToolsmithingWorkbenchRenderer::new);
     }
 
     @SubscribeEvent
